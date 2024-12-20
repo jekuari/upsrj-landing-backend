@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from 'src/auth/entities/user.entity';
 import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { system_module } from './systemModule.entity';
 
 
 @Entity({ name: 'permission' })
@@ -18,7 +19,7 @@ export class Permission {
     })
     @Column('text')
     module_name: string;
-   
+
     @ApiProperty({
         description: 'Permission to create resources',
         type: Boolean,
@@ -47,9 +48,9 @@ export class Permission {
     @Column('bool', { default: false })
     delete: boolean;
 
-    @ManyToOne(
-        () => User,
-        (user) => user.permissions
-    )
+    @ManyToOne(() => User, (user) => user.permissions)
     user: User;
+
+    @ManyToOne(() => system_module, (module) => module.permissions, { eager: true }) // Relación con el módulo
+    module: system_module;
 }
