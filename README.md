@@ -65,6 +65,8 @@ DB_PORT=5432
 DB_USERNAME=postgres
 CONTAINER_NAME=NameOFTheContainer
 
+#Esta contraseña es para la creacion del seed , se mandan en el @param
+PASSWORD_SEED='SecretoContraseña'
 
 ```
 
@@ -84,6 +86,8 @@ DB_PORT=5434
 DB_USERNAME=postgres
 CONTAINER_NAME=NameOFTheContainer
 
+#Esta contraseña es para la creacion del seed , se mandan en el @param
+PASSWORD_SEED='SecretoContraseña'
 
 ```
 

@@ -9,6 +9,7 @@ import { User } from './entities/user.entity';
 import { LoginUserDto, CreateUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt.payload.interface';
 import { PermissionService } from 'src/permission/permission.service';
+import { UUID } from 'crypto';
 
 
 @Injectable()
@@ -33,7 +34,7 @@ export class AuthService {
       });
 
       await this.userRepository.save(user);
-      const permissions = await this.permissionService.createPermission(user)
+      await this.permissionService.createPermission(user);
       delete user.password;
       delete user.roles;
       
@@ -86,6 +87,10 @@ export class AuthService {
     }; // O puedes devolver un token de autenticación en lugar del usuario.
 }
 
+  async getUser(id:UUID){
+    const user = this.userRepository.findOneBy({id});
+    return user;
+  }
   private getJwtToken(payload: JwtPayload){
     const token = this.jwtService.sign(payload);
     return token;

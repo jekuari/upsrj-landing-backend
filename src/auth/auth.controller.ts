@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { GetUser } from './decorators/get-user.decorator';
 import { Auth } from './decorators/auth.decorator';
 import { ApiResponse } from '@nestjs/swagger';
+import { UUID } from 'crypto';
 
 
 
@@ -28,6 +29,10 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
+  @Get(':id')
+  getUser(@Param('id') id: UUID) {
+    return this.authService.getUser(id);
+  }
 
   @ApiResponse({ status: 201, description: 'User check-status', type: User})
   @ApiResponse({ status: 400, description: 'Bad request due to invalid input' })
