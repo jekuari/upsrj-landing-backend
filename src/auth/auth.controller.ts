@@ -1,14 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, SetMetadata } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { get, request } from 'http';
-
+import { Controller, Get, Post, Body} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { GetUser } from './decorators/get-user.decorator';
 import { Auth } from './decorators/auth.decorator';
 import { ApiResponse } from '@nestjs/swagger';
-import { ValidRoles } from './interfaces';
+
 
 
 @Controller('auth')

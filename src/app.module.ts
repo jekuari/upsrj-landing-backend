@@ -10,7 +10,7 @@ import { SeedModule } from './seed/seed.module';
 @Module({
   imports: [
     AuthModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({isGlobal:true}),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,

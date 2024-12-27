@@ -11,6 +11,6 @@ import { system_module } from './entities/systemModule.entity';
     TypeOrmModule.forFeature([Permission, system_module])
   ],
   providers: [PermissionService],
-  exports:[ TypeOrmModule]
+  exports:[TypeOrmModule]
 })
 export class PermissionModule {}
