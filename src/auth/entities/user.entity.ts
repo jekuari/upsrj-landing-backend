@@ -1,15 +1,44 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Permission } from 'src/permission/entities/permission.entity';
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
-@Entity({ name: 'users' })
+@Entity({name:"users"})
 export class User {
+
     @ApiProperty({
-        description: 'Unique identifier of the user',
+        description: 'Identificador único del usuario',
         type: String,
     })
     @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id:string;
+
+    //* Mail de los usuarios
+    @ApiProperty({
+        description: 'Correo del usuario',
+        type: String,
+    })
+    @Column('text', {
+        unique:true
+    })
+    email:string;
+
+    //* Password
+    @ApiProperty({
+        description: 'Contraseña de los usuarios',
+        type: String,
+    })
+    @Column('text', {
+        select:false
+    })
+    password:string;
+
+    //* FullName
+     @ApiProperty({
+        description: 'Nombre completo de los usuarios',
+        type: String,
+    })
+    @Column('text')
+    fullName:string;
 
     @ApiProperty({
         description: 'Matricula of the user for the UPSRJ',
@@ -18,33 +47,27 @@ export class User {
     @Column('text')
     matricula: string;
 
+    //* IsActive
     @ApiProperty({
-        description: 'Full name of the user',
-        type: String,
-    })
-    @Column('text')
-    fullName: string;
-
-    @ApiProperty({
-        description: 'Email address of the user',
-        type: String,
-    })
-    @Column('text', { unique: true })
-    email: string;
-
-    @ApiProperty({
-        description: 'Password of the user',
-        type: String,
-    })
-    @Column('text', { select: false })
-    password: string;
-
-    @ApiProperty({
-        description: 'Indicates whether the user is active',
+        description: 'Los usuarios no se elimina, solo se dan de baja con un boolean',
         type: Boolean,
     })
-    @Column('bool', { default: true })
-    isActive: boolean;
+    @Column('bool' , {
+        default:true
+    })
+    isActive:boolean;
+
+    //* Roles de los usuarios
+    @ApiProperty({
+        description: 'Los diferentes tipos usuarios de la app: admin, super-user, user, pero se define user por defecto',
+        type: [String],
+    
+    })
+    @Column('text' , {
+        array:true,
+        default:['user']
+    })
+    roles:string[];
 
     @OneToMany(
         () => Permission,
@@ -52,11 +75,22 @@ export class User {
         { cascade: true , eager: true }
     )
     permissions: Permission[];
-
+    
     @BeforeInsert()
-    @BeforeUpdate()
-    normalizeFields() {
-        this.email = this.email.toLowerCase().trim();
-        this.fullName = this.fullName.toLowerCase().trim();
+    checkFieldsInsert() {
+
+        this.email = this.email
+            .toLowerCase()
+            .trim();
     }
-}
+
+    @BeforeUpdate()
+    checkFieldsBeforeUpdate() {
+
+        this.email = this.email
+            .toLowerCase()
+            .trim();
+    }
+
+}   
+
