@@ -17,31 +17,11 @@ export class PermissionService {
     private readonly SystemModuleRepository: Repository<system_module>
   ){}
 
-  async create(createPermissionDto: CreatePermissionDto, user: User): Promise<Permission> {
-    const { moduleId, ...permissionData } = createPermissionDto;
-
-    // Recuperar el módulo relacionado
-    const module = await this.SystemModuleRepository.findOneByOrFail({ id: moduleId });
-
-    // Crear y guardar la entidad Permission
-    const permission = this.permissionRepository.create({
-        ...permissionData,
-        user,  // Relación con el usuario autenticado
-        module, // Relación con el módulo
-    });
-
-    return this.permissionRepository.save(permission);
-  }
-
-  
-
-
-
   findAll() {
     return `This action returns all permission`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} permission`;
   }
 
@@ -55,20 +35,19 @@ export class PermissionService {
 
 
   async createPermission(user: User): Promise<Permission[]> {
-    // Recuperar todos los módulos existentes
+
     const modules = await this.SystemModuleRepository.find();
-    // Crear permisos para cada módulo y asociarlos al usuario
+
     const permissions = modules.map(module => {
       const permission = this.permissionRepository.create({
-        user, // Relacionamos el usuario
-        module, // Relacionamos el módulo
-        module_name: module.module_name, // Asignamos el nombre del módulo correctamente
+        user,
+        module, 
+        module_name: module.module_name, 
       });
 
       return permission;
     });
 
-    // Guardar los permisos en la base de datos
     return this.permissionRepository.save(permissions);
   }
 }

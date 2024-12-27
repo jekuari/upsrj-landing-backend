@@ -15,7 +15,7 @@ export class PermissionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.permissionService.findOne(+id);
+    return this.permissionService.findOne(id);
   }
 
   @Patch(':id')

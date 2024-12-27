@@ -7,9 +7,7 @@ import { META_ROLE } from '../decorators/role-protected.decorator';
 export class UserRoleGuard implements CanActivate {
   constructor(
     private readonly reflector:Reflector
-  ){
-
-  }
+  ){}
   
   canActivate(
     context: ExecutionContext,

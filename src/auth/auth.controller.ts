@@ -30,7 +30,7 @@ export class AuthController {
   }
 
   @Get(':id')
-  getUser(@Param('id') id: UUID) {
+  getUser(@Param('id') id: string) {
     return this.authService.getUser(id);
   }
 

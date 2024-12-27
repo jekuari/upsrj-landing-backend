@@ -20,7 +20,7 @@ export class AuthService {
     private readonly jwtService:JwtService,
     private readonly permissionService: PermissionService
   ){}
-
+  
   async create(createUserDto: CreateUserDto) {
     try {
       const { password, ...userData } = createUserDto;
@@ -37,11 +37,14 @@ export class AuthService {
       await this.permissionService.createPermission(user);
       delete user.password;
       delete user.roles;
-      
+
+      //
+      const userReturn = await this.getUser(user.id);
       
 
       return {
-        ...user,
+        user: userReturn,
+        //...user, con este no mandamos la informacion de permisos
         token: this.getJwtToken({id: user.id})
       };
 
@@ -87,7 +90,7 @@ export class AuthService {
     }; // O puedes devolver un token de autenticación en lugar del usuario.
 }
 
-  async getUser(id:UUID){
+  async getUser(id:string){
     const user = this.userRepository.findOneBy({id});
     return user;
   }
