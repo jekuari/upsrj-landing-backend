@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { LoginUserDto, CreateUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt.payload.interface';
+import { PermissionService } from 'src/permission/permission.service';
 
 
 @Injectable()
@@ -15,7 +16,8 @@ export class AuthService {
   constructor( 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly jwtService:JwtService
+    private readonly jwtService:JwtService,
+    private readonly permissionService: PermissionService
   ){}
 
   async create(createUserDto: CreateUserDto) {
@@ -31,8 +33,11 @@ export class AuthService {
       });
 
       await this.userRepository.save(user);
+      const permissions = await this.permissionService.createPermission(user)
       delete user.password;
       delete user.roles;
+      
+      
 
       return {
         ...user,
