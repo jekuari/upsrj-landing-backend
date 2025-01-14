@@ -26,7 +26,7 @@ export class AuthService {
       const { password, ...userData } = createUserDto;
       
       // Hash the password using bcrypt
-      const hashedPassword = await bcrypt.hashSync(password, 10)
+      const hashedPassword = await bcrypt.hashSync(password, 10);
 
       const user = this.userRepository.create({
         ...userData,
@@ -34,11 +34,13 @@ export class AuthService {
       });
 
       await this.userRepository.save(user);
+
+
+      //Crear sus permisos
       await this.permissionService.createPermission(user);
       delete user.password;
-      delete user.roles;
 
-      //
+      
       const userReturn = await this.getUser(user.id);
       
 
@@ -53,12 +55,6 @@ export class AuthService {
     }
   }
 
-  async checkAuthStatus( user:User){
-    return {
-      ...user,
-      token: this.getJwtToken({id: user.id})
-    };
-  }
   async login(loginUserDto: LoginUserDto) {
     const { password, email } = loginUserDto;
     
@@ -93,7 +89,8 @@ export class AuthService {
   async getUser(id:string){
     const user = this.userRepository.findOneBy({id});
     return user;
-  }
+  };
+  
   private getJwtToken(payload: JwtPayload){
     const token = this.jwtService.sign(payload);
     return token;

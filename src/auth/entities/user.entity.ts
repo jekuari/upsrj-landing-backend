@@ -57,18 +57,6 @@ export class User {
     })
     isActive:boolean;
 
-    //* Roles de los usuarios
-    @ApiProperty({
-        description: 'Los diferentes tipos usuarios de la app: admin, super-user, user, pero se define user por defecto',
-        type: [String],
-    
-    })
-    @Column('text' , {
-        array:true,
-        default:['user']
-    })
-    roles:string[];
-
     @OneToMany(
         () => Permission,
         (permission) => permission.user,
