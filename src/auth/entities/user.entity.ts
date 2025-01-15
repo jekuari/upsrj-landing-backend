@@ -57,6 +57,15 @@ export class User {
     })
     isActive:boolean;
 
+    // isDeleted)
+    @ApiProperty({description: 'Eliminar usuario logicamente (soft delete)', 
+        type: Boolean
+    })
+    @Column('bool',{
+        default: false 
+    })
+    isDeleted: boolean;
+
     @OneToMany(
         () => Permission,
         (permission) => permission.user,
