@@ -1,4 +1,20 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreatePermissionDto } from './create-permission.dto';
+import { IsOptional, IsBoolean } from 'class-validator';
 
-export class UpdatePermissionDto extends PartialType(CreatePermissionDto) {}
+export class UpdatePermissionDto {
+
+    @IsBoolean()
+    @IsOptional()
+    create?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    read?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    update?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    delete?: boolean;
+}

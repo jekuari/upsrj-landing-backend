@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 
@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
 import { User } from './entities/user.entity';
-import { LoginUserDto, CreateUserDto } from './dto';
+import { LoginUserDto, CreateUserDto, UpdateUserDto, UpdateUserStatusDto } from './dto';
 import { JwtPayload } from './interfaces/jwt.payload.interface';
 import { PermissionService } from 'src/permission/permission.service';
 import { UUID } from 'crypto';
@@ -105,4 +105,45 @@ export class AuthService {
 
     throw new InternalServerErrorException('Please check server logs');
   }
+
+  //Gestion de usuarios (woods)
+
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id, isDeleted: false } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found or has been deleted`);
+    }
+    Object.assign(user, updateUserDto);
+    return this.userRepository.save(user);
+  }
+
+  async updateUserStatus(id: string, updateUserStatusDto: UpdateUserStatusDto): Promise<User> {
+      const user = await this.userRepository.findOne({ where: { id, isDeleted: false } });
+      if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found or has been deleted`);
+      }
+      user.isActive = updateUserStatusDto.isActive;
+      return this.userRepository.save(user);
+  }
+
+  async softDeleteUser(id: string): Promise<User> {
+      const user = await this.userRepository.findOne({ where: { id, isDeleted: false } });
+      if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found or already deleted`);
+      }
+      user.isDeleted = true;
+      return this.userRepository.save(user);
+  }
+
+  async deleteUser(id: string): Promise<void> {
+      const user = await this.userRepository.findOne({ where: { id } });
+      if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      if (!user.isDeleted) {
+      throw new BadRequestException(`User with ID ${id} must be soft deleted before permanent removal`);
+      }
+      await this.userRepository.delete(id);
+  }
+
 }

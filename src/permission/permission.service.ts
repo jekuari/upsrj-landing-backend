@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { Repository } from 'typeorm';
@@ -33,6 +33,23 @@ export class PermissionService {
 
     return this.permissionRepository.save(permissions);
   }
+
+    // Método para actualizar permisos de un módulo específico
+    // moduleName or moduleId?
+    async updatePermissions(userId: string, moduleName: string, updatePermissionDto: UpdatePermissionDto): Promise<Permission> {
+      const permission = await this.permissionRepository.findOne({ where: { userId, moduleName } });
+      //userid does not exist in type Permission
+
+      if (!permission) {
+      throw new NotFoundException(`Permissions for module '${moduleName}' and user with ID '${userId}' not found.`
+      );
+      }
+
+      Object.assign(permission, updatePermissionDto);
+      return this.permissionRepository.save(permission);
+  }
+
+
 }
 
 
