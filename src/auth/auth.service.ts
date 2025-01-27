@@ -130,7 +130,8 @@ export class AuthService {
     }
   }
 
-  async desactiveUsers(id:string){
+  
+  async desactiveUsers(id: string) {
     try {
       const query = ObjectId.isValid(id)
         ? { _id: new ObjectId(id), isActive: true }
@@ -139,15 +140,21 @@ export class AuthService {
       const user = await this.userRepository.findOne({ where: query });
 
       if (!user) {
-        throw new NotFoundException('The user is not found or is desactivate');
+        throw new NotFoundException('The user is not found or is already deactivated');
+      }
+      const updateResult = await this.userRepository.findOneAndUpdate(
+        { _id: user.id },
+        { $set: { isActive: false } },
+        { returnDocument: 'after' }
+      );
+
+      if (!updateResult) {
+        throw new InternalServerErrorException('Failed to update user');
       }
 
-      await this.userRepository.update(user.id,{isActive:false});
-
-      // Retornar el usuario actualizado
-      return await this.userRepository.findOneBy({ _id: new ObjectId(user.id) });
+      return updateResult;
     } catch (error) {
-      throw new Error(`Error updating user: ${error.message}`);
+      throw new InternalServerErrorException(`Error updating user: ${error.message}`);
     }
   }
 }

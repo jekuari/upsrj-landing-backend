@@ -7,7 +7,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { GetUser } from './decorators/get-user.decorator';
 import { Auth } from './decorators/auth.decorator';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 
@@ -44,6 +44,11 @@ export class AuthController {
 
 
   @Patch('disable/:id')
+  @ApiOperation({ summary: 'Disable a user', description: 'Disables a user by their unique ID.' })
+  @ApiParam({ name: 'id', required: true, description: 'Unique identifier of the user', example: '65d5c1ab2f4f4d3e9c8b4567' })
+  @ApiResponse({ status: 200, description: 'User disabled successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 400, description: 'Invalid user ID format' })
   async userStatus(@Param('id') id: string) {
     return this.authService.desactiveUsers(id);
   }
