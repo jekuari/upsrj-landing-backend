@@ -2,6 +2,7 @@ import {
   BadRequestException, 
   Injectable, 
   InternalServerErrorException, 
+  NotFoundException, 
   UnauthorizedException 
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +14,8 @@ import { User } from './entities/user.entity';
 import { LoginUserDto, CreateUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt.payload.interface';
 import { AccessRightsService } from '../access-rights/access-rights.service';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class AuthService {
@@ -103,5 +106,28 @@ export class AuthService {
 
     console.error(error);
     throw new InternalServerErrorException('Please check server logs');
+  }
+  async UpdateUsers(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    try {
+      const query = ObjectId.isValid(id)
+        ? { _id: new ObjectId(id), isActive: true }
+        : { matricula: id, isActive: true };
+
+      const user = await this.userRepository.findOne({ where: query });
+
+      if (!user) {
+        throw new NotFoundException('The user is not found');
+      }
+
+      await this.userRepository.update(user.id, updateUserDto);
+
+      // Retornar el usuario actualizado
+      return await this.userRepository.findOneBy({ _id: new ObjectId(user.id) });
+    } catch (error) {
+      throw new Error(`Error updating user: ${error.message}`);
+    }
+  }
+  async deleteUsers(id:string){
+    return "hola mundo"
   }
 }
