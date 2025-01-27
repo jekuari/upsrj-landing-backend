@@ -45,7 +45,7 @@ export class AuthController {
 
   @Patch('disable/:id')
   async userStatus(@Param('id') id: string) {
-    return this.authService.deleteUsers(id);
+    return this.authService.desactiveUsers(id);
   }
 
 

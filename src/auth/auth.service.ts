@@ -107,6 +107,8 @@ export class AuthService {
     console.error(error);
     throw new InternalServerErrorException('Please check server logs');
   }
+
+
   async UpdateUsers(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     try {
       const query = ObjectId.isValid(id)
@@ -127,7 +129,25 @@ export class AuthService {
       throw new Error(`Error updating user: ${error.message}`);
     }
   }
-  async deleteUsers(id:string){
-    return "hola mundo"
+
+  async desactiveUsers(id:string){
+    try {
+      const query = ObjectId.isValid(id)
+        ? { _id: new ObjectId(id), isActive: true }
+        : { matricula: id, isActive: true };
+
+      const user = await this.userRepository.findOne({ where: query });
+
+      if (!user) {
+        throw new NotFoundException('The user is not found or is desactivate');
+      }
+
+      await this.userRepository.update(user.id,{isActive:false});
+
+      // Retornar el usuario actualizado
+      return await this.userRepository.findOneBy({ _id: new ObjectId(user.id) });
+    } catch (error) {
+      throw new Error(`Error updating user: ${error.message}`);
+    }
   }
 }

@@ -45,7 +45,7 @@ export class User {
         description: 'Matricula de los usuarios',
         type: String,
     })
-    @Column()
+    @Column({ unique: true })
     matricula: string;
 
     //* IsActive
