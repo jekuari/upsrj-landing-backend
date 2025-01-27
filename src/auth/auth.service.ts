@@ -121,12 +121,18 @@ export class AuthService {
         throw new NotFoundException('The user is not found');
       }
 
+      // Si se incluye una nueva contraseña, la encripta antes de actualizar
+      if (updateUserDto.password) {
+        const salt = await bcrypt.genSalt(10);
+        updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
+      }
+      
       await this.userRepository.update(user.id, updateUserDto);
 
       // Retornar el usuario actualizado
       return await this.userRepository.findOneBy({ _id: new ObjectId(user.id) });
     } catch (error) {
-      throw new Error(`Error updating user: ${error.message}`);
+      throw new InternalServerErrorException(`Error updating user: ${error.message}`);
     }
   }
 
