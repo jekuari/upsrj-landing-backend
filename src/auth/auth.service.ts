@@ -1,10 +1,4 @@
-import { 
-  BadRequestException, 
-  Injectable, 
-  InternalServerErrorException, 
-  NotFoundException, 
-  UnauthorizedException 
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 
@@ -15,6 +9,7 @@ import { LoginUserDto, CreateUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt.payload.interface';
 import { AccessRightsService } from '../access-rights/access-rights.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ObjectId } from 'mongodb';
 
 @Injectable()
@@ -141,13 +136,18 @@ export class AuthService {
     try {
       const query = ObjectId.isValid(id)
         ? { _id: new ObjectId(id), isActive: true }
-        : { matricula: id, isActive: true };
+        : { matricula: id};
 
       const user = await this.userRepository.findOne({ where: query });
 
       if (!user) {
-        throw new NotFoundException('The user is not found or is already deactivated');
+        throw new NotFoundException('The user is not found');
       }
+
+      if (!user.isActive) {
+        throw new BadRequestException('The user is already deactivated');
+      }
+
       const updateResult = await this.userRepository.findOneAndUpdate(
         { _id: user.id },
         { $set: { isActive: false } },
@@ -160,7 +160,27 @@ export class AuthService {
 
       return updateResult;
     } catch (error) {
-      throw new InternalServerErrorException(`Error updating user: ${error.message}`);
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error; // Mantiene el código de error original
+      }
+      
+      throw new InternalServerErrorException('Unexpected error updating user');
+      
     }
   }
+
+
+  //Obtener todos los usuarios con paginacion de 10 en 10
+  async findAll( paginationDto: PaginationDto) {
+
+    const { limit = 10, offset = 0 } = paginationDto;
+
+    const user = await this.userRepository.find({
+      take: limit,
+      skip: offset
+    });
+
+    return user;
+  }
+
 }

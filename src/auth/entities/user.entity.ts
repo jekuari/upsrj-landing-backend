@@ -41,7 +41,7 @@ export class User {
     fullName: string;
 
      //* FullName
-     @ApiProperty({
+    @ApiProperty({
         description: 'Matricula de los usuarios',
         type: String,
     })
