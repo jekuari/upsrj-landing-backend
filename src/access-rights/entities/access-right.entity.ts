@@ -11,6 +11,10 @@ export class AccessRight {
     @ApiProperty({ description: 'Module ID associated with the access right', type: 'string', format: 'ObjectId' })
     moduleId: ObjectId;
 
+    @Column()
+    @ApiProperty({ description: 'Module name associated with the access right', type: 'string' })
+    moduleName: string;
+
     @Column({ default: false })
     @ApiProperty({ description: 'Permission to create resources', default: false })
     canCreate: boolean;

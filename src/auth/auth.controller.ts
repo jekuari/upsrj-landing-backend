@@ -16,7 +16,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiResponse({ status: 201, description: 'User was found successfully'})
-  @Get('get-users')
+  @Get('getUsers')
   findAll(@Query() paginationDto: PaginationDto) {
     return this.authService.findAll(paginationDto);
   }
@@ -38,8 +38,9 @@ export class AuthController {
   }
 
   @ApiResponse({ status: 201, description: 'Request successful. User was update successfully', type: UpdateUserDto})
-  @ApiResponse({ status: 403, description: 'Forbidden. Token related issues' })
-  @ApiResponse({ status: 500, description: 'Internal server error. User not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden. Token related issues'})
+  @ApiResponse({ status: 404, description: 'User not found'})
+  @ApiResponse({ status: 500, description: 'Internal server error'})
   @Patch('updateUser/:id')
   updateUser(
     @Param('id') id: string,

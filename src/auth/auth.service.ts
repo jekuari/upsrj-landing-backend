@@ -127,10 +127,13 @@ export class AuthService {
       // Retornar el usuario actualizado
       return await this.userRepository.findOneBy({ _id: new ObjectId(user.id) });
     } catch (error) {
-      throw new InternalServerErrorException(`Error updating user: ${error.message}`);
+      if (error instanceof NotFoundException) {
+        throw error; // Mantiene el código de error original
+      }
+      
+      throw new InternalServerErrorException('Unexpected error updating user');
     }
   }
-
   
   async desactiveUsers(id: string) {
     try {
@@ -180,7 +183,8 @@ export class AuthService {
       skip: offset
     });
 
-    return user;
+    //Retornar los usuarios sin la contraseña
+    return user.map(({ password, ...userData }) => userData);
   }
 
 }

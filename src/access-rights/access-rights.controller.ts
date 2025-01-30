@@ -1,30 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { AccessRightsService } from './access-rights.service';
 import { CreateAccessRightDto } from './dto/create-access-right.dto';
 import { UpdateAccessRightDto } from './dto/update-access-right.dto';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('access-rights')
 export class AccessRightsController {
   constructor(private readonly accessRightsService: AccessRightsService) {}
 
-  @Post()
-  create(@Body() createAccessRightDto: CreateAccessRightDto) {
-    return this.accessRightsService.create(createAccessRightDto);
+  @ApiResponse({ status: 200, description: 'Request successful'})
+  @Get('getPermission/:userId')
+  findOne(@Param('userId') UserId: string, @Query('module') moduleName: string) {
+    return this.accessRightsService.findOne(UserId, moduleName);
   }
 
-  @Get()
-  findAll() {
-    return this.accessRightsService.findAll();
+  @ApiResponse({ status: 200, description: 'Request successful'})
+  @Get('getPermissions/:userId')
+  findAll(@Param('userId') UserId: string) {
+    return this.accessRightsService.findAll(UserId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.accessRightsService.findOne(+id);
-  }
-
-  @Patch(':id')
+  @Patch('updatePermissions/:id')
   update(@Param('id') id: string, @Body() updateAccessRightDto: UpdateAccessRightDto) {
-    return this.accessRightsService.update(+id, updateAccessRightDto);
+    return this.accessRightsService.update(id, updateAccessRightDto);
   }
 
   @Delete(':id')

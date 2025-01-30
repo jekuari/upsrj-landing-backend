@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAccessRightDto } from './dto/create-access-right.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateAccessRightDto } from './dto/update-access-right.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccessRight } from './entities/access-right.entity';
-import { Repository } from 'typeorm';
 import { SystemModule } from './entities/system-module.entity';
+import { Repository } from 'typeorm';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class AccessRightsService {
@@ -16,22 +16,37 @@ export class AccessRightsService {
     @InjectRepository(SystemModule)
     private readonly SystemModuleRepository: Repository<SystemModule>
   ){}
-  create(createAccessRightDto: CreateAccessRightDto) {
-    return 'This action adds a new accessRight';
+
+  //Get access rights for a user for a specific module
+  async findOne(userId: string, moduleName: string) { 
+
+    const permissions = await this.AccessRightRepository.findOne({ where: { userId: new ObjectId(userId), moduleName: moduleName} });
+
+    if (!permissions) {
+      throw new NotFoundException('Permissions not found');
+    }
+
+    return permissions;
+
   }
 
-  findAll() {
-    return `This action returns all accessRights`;
+  //Get all access rights for a user
+  async findAll(userId: string) {
+    const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(userId),}});
+
+    if (!permissions) {
+      throw new NotFoundException('Permissions not found');
+    }
+
+    return permissions;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} accessRight`;
-  }
-
-  update(id: number, updateAccessRightDto: UpdateAccessRightDto) {
+  //TODO: update access rights for a user for a specific module
+  update(id: string, updateAccessRightDto: UpdateAccessRightDto) {
     return `This action updates a #${id} accessRight`;
   }
 
+  //TODO: deactivate all access rights for a user
   remove(id: number) {
     return `This action removes a #${id} accessRight`;
   }
@@ -44,7 +59,8 @@ export class AccessRightsService {
     const permissions = modules.map(module => {
         const permission = this.AccessRightRepository.create({
             userId: user.id,         // Guardamos solo el ID del usuario
-            moduleId: module._id,     // Guardamos solo el ID del módulo
+            moduleId: module._id,     // Guardamos el ID del módulo
+            moduleName: module.moduleName,  // Guardamos el nombre del módulo
             canCreate: false,        // Inicializar permisos por defecto
             canRead: false,           // Solo lectura por defecto
             canUpdate: false,

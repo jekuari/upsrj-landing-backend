@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength, IsOptional, IsBoolean } from 'class-validator';
-import { CreateUserDto } from "./create-user.dto";
+import { IsEmail, IsString, Matches, MaxLength, MinLength, IsOptional, IsBoolean } from 'class-validator';
 
 
 export class UpdateUserDto{
@@ -52,9 +51,8 @@ export class UpdateUserDto{
     fullName?:string;
 
     @ApiProperty({
-        example: 'Andrea Lopez',
-        description: 'Nombre completo de los usuarios',
-        type: "string"
+        description: 'Estado del usuario',
+        type: "boolean"
     })
     @IsBoolean()
     @IsOptional()
