@@ -25,8 +25,8 @@ export class AccessRightsController {
     return this.accessRightsService.update(id, updateAccessRightDto);
   }
 
-  @Delete(':id')
+  @Patch('removePermissions/:id')
   remove(@Param('id') id: string) {
-    return this.accessRightsService.remove(+id);
+    return this.accessRightsService.remove(id);
   }
 }

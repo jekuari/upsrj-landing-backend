@@ -1,11 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { AccessRightsModule } from './access-rights/access-rights.module';
 import { SeedModule } from './seed/seed.module';
+import { SeedService } from './seed/seed.service';
 
 @Module({
+  providers: [SeedService],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,  // Permite acceso a las variables de entorno en toda la app
@@ -24,4 +26,10 @@ import { SeedModule } from './seed/seed.module';
     AccessRightsModule,
   ]
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private readonly seedService: SeedService) {}
+
+  async onModuleInit() {
+    await this.seedService.executeSeed(process.env.PASSWORD_SEED);
+  }
+}

@@ -47,8 +47,21 @@ export class AccessRightsService {
   }
 
   //TODO: deactivate all access rights for a user
-  remove(id: number) {
-    return `This action removes a #${id} accessRight`;
+  async remove(id: string) {
+    const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(id) } });
+
+    if (!permissions) {
+      throw new NotFoundException('Permissions not found');
+    }
+
+    for (const permission of permissions) {
+      permission.canCreate = false;
+      permission.canRead = false;
+      permission.canUpdate = false;
+      permission.canDelete = false;
+    }
+
+    await this.AccessRightRepository.save(permissions);
   }
 
   async createPermission(user: User): Promise<AccessRight[]> {
