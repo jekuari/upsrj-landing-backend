@@ -72,4 +72,10 @@ export class AuthController {
     return this.authService.checkAuthStatus(user)
   }
 
+  //Prueba (Get user 'isActive' status)
+  @Get('status/:id')
+  checkStatus(@Param('id') id: string){
+    return this.authService.checkUserStatus(id)
+  }
+
 }

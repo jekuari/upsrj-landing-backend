@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateAccessRightDto } from './dto/update-access-right.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,21 +6,26 @@ import { AccessRight } from './entities/access-right.entity';
 import { SystemModule } from './entities/system-module.entity';
 import { Repository } from 'typeorm';
 import { ObjectId } from 'mongodb';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class AccessRightsService {
   constructor(
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService:AuthService,
+
     @InjectRepository(AccessRight)
     private readonly AccessRightRepository: Repository<AccessRight>,
     
     @InjectRepository(SystemModule)
-    private readonly SystemModuleRepository: Repository<SystemModule>
+    private readonly SystemModuleRepository: Repository<SystemModule>,
+
   ){}
 
   //Get access rights for a user for a specific module
   async findOne(userId: string, moduleName: string) { 
 
-    const permissions = await this.AccessRightRepository.findOne({ where: { userId: new ObjectId(userId), moduleName: moduleName} });
+    const permissions = await this.AccessRightRepository.findOne({ where: { userId: new ObjectId(userId), moduleName: moduleName}});
 
     if (!permissions) {
       throw new NotFoundException('Permissions not found');
@@ -42,11 +47,24 @@ export class AccessRightsService {
   }
 
   //TODO: update access rights for a user for a specific module
-  update(id: string, updateAccessRightDto: UpdateAccessRightDto) {
-    return `This action updates a #${id} accessRight`;
+  async update(id: string, moduleName: string, updateAccessRightDto: UpdateAccessRightDto) {
+
+    const permissions = await this.AccessRightRepository.find({where: {userId: new ObjectId(id), moduleName: moduleName}});
+
+    await this.authService.checkUserStatus(id);
+
+    const updatedPermissions = await this.AccessRightRepository.preload({
+      _id: permissions, // Usar el ID real de los permisos
+      ...updateAccessRightDto,
+    });
+
+    if (!updatedPermissions) {
+      throw new NotFoundException(`Could not preload permissions for user ${id} in module ${moduleName}`);
+    }
+
+    return this.AccessRightRepository.save(updatedPermissions);
   }
 
-  //TODO: deactivate all access rights for a user
   async remove(id: string) {
     const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(id) } });
 

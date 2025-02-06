@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,13 +8,14 @@ import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { AccessRightsService } from 'src/access-rights/access-rights.service';
 import { AccessRightsModule } from 'src/access-rights/access-rights.module';
 
 @Module({
   controllers: [AuthController],
   imports:[
+    forwardRef(() => AccessRightsModule),
     ConfigModule,
-    AccessRightsModule,
     TypeOrmModule.forFeature([User]),
     PassportModule.register({defaultStrategy: 'jwt'}),
 
@@ -33,7 +34,7 @@ import { AccessRightsModule } from 'src/access-rights/access-rights.module';
       }
     })
   ],
-  providers: [AuthService , JwtStrategy],
-  exports:[TypeOrmModule, JwtStrategy, PassportModule, JwtModule ]
+  providers: [AuthService , JwtStrategy, AccessRightsService],
+  exports:[TypeOrmModule, JwtStrategy, PassportModule, JwtModule]
 })
 export class AuthModule {}

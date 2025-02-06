@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 
@@ -17,6 +17,7 @@ export class AuthService {
   constructor( 
     @InjectRepository(User)
     private readonly userRepository: MongoRepository<User>,  // Cambio a MongoRepository para compatibilidad con MongoDB
+    @Inject(forwardRef(() => AccessRightsService))
     private readonly accessRightsService:AccessRightsService, 
     private readonly jwtService: JwtService
   ) {}
@@ -157,9 +158,13 @@ export class AuthService {
         { returnDocument: 'after' }
       );
 
+      
+
       if (!updateResult) {
         throw new InternalServerErrorException('Failed to update user');
       }
+
+      //TODO: Remove permissions
 
       return updateResult;
     } catch (error) {
@@ -187,4 +192,17 @@ export class AuthService {
     return user.map(({ password, ...userData }) => userData);
   }
 
+  async checkUserStatus(id: string) {
+    const user = await this.userRepository.findOne({
+      where: { _id: new ObjectId(id) }, 
+    });
+
+    if (!user || !user.isActive) {
+      throw new NotFoundException('User not found or inactive');
+    }
+
+    return user;
+  }
 }
+
+

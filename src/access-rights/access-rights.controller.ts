@@ -20,9 +20,9 @@ export class AccessRightsController {
     return this.accessRightsService.findAll(UserId);
   }
 
-  @Patch('updatePermissions/:id')
-  update(@Param('id') id: string, @Body() updateAccessRightDto: UpdateAccessRightDto) {
-    return this.accessRightsService.update(id, updateAccessRightDto);
+  @Patch('updatePermissions/:userId')
+  update(@Param('userId') UserId: string, @Query('module') moduleName: string, @Body() updateAccessRightDto: UpdateAccessRightDto) {
+    return this.accessRightsService.update(UserId, moduleName, updateAccessRightDto);
   }
 
   @Patch('removePermissions/:id')

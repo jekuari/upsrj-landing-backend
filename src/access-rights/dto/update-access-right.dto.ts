@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CreateAccessRightDto } from './create-access-right.dto';
 import { IsBoolean, IsOptional } from 'class-validator';
 export class UpdateAccessRightDto {
 
