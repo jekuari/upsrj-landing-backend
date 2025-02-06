@@ -46,24 +46,29 @@ export class AccessRightsService {
     return permissions;
   }
 
-  //TODO: update access rights for a user for a specific module
   async update(id: string, moduleName: string, updateAccessRightDto: UpdateAccessRightDto) {
-
-    const permissions = await this.AccessRightRepository.find({where: {userId: new ObjectId(id), moduleName: moduleName}});
-
+    
     await this.authService.checkUserStatus(id);
 
-    const updatedPermissions = await this.AccessRightRepository.preload({
-      _id: permissions, // Usar el ID real de los permisos
-      ...updateAccessRightDto,
+    const permissions = await this.AccessRightRepository.find({
+        where: { userId: new ObjectId(id), moduleName: moduleName }
     });
 
-    if (!updatedPermissions) {
-      throw new NotFoundException(`Could not preload permissions for user ${id} in module ${moduleName}`);
+    if (!permissions) {
+        throw new NotFoundException(`Permissions not found for user ${id} in module ${moduleName}`);
     }
 
-    return this.AccessRightRepository.save(updatedPermissions);
-  }
+    const updatedPermissions = permissions.map(permission => {
+        return this.AccessRightRepository.create({
+            ...permission,
+            ...updateAccessRightDto,
+        });
+    });
+
+    this.AccessRightRepository.save(updatedPermissions);
+    
+    return updatedPermissions;
+}
 
   async remove(id: string) {
     const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(id) } });
@@ -80,6 +85,8 @@ export class AccessRightsService {
     }
 
     await this.AccessRightRepository.save(permissions);
+
+    return permissions
   }
 
   async createPermission(user: User): Promise<AccessRight[]> {

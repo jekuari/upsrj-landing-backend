@@ -137,6 +137,16 @@ $ pnpm run start:prod
 
 
 * Postgres
+* AHORA MONGODB
+```
+npm i mongodb@5.9.2
+```
 * NodeJs
 * Docker / Docker Compose
 * Nest
+
+## MAC (borrar prettier)
+
+```
+pnpm remove prettier eslint-config-prettier eslint-plugin-prettier
+```
