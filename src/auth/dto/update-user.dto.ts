@@ -50,14 +50,5 @@ export class UpdateUserDto{
     @MinLength(1)
     fullName?:string;
 
-    @ApiProperty({
-        description: 'Estado del usuario',
-        type: "boolean"
-    })
-    @IsBoolean()
-    @IsOptional()
-    isActive?:boolean;
-
-
 }
 

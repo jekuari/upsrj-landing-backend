@@ -104,17 +104,16 @@ export class AuthService {
     throw new InternalServerErrorException('Please check server logs');
   }
 
-
   async UpdateUsers(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     try {
       const query = ObjectId.isValid(id)
-        ? { _id: new ObjectId(id), isActive: true }
-        : { matricula: id, isActive: true };
+        ? { _id: new ObjectId(id), }
+        : { matricula: id};
 
       const user = await this.userRepository.findOne({ where: query });
 
-      if (!user) {
-        throw new NotFoundException('The user is not found');
+      if (!user || !user.isActive) {
+        throw new NotFoundException('The user is not found or inactive');
       }
 
       // Si se incluye una nueva contraseña, la encripta antes de actualizar
@@ -139,7 +138,7 @@ export class AuthService {
   async desactiveUsers(id: string) {
     try {
       const query = ObjectId.isValid(id)
-        ? { _id: new ObjectId(id), isActive: true }
+        ? { _id: new ObjectId(id), /*isActive: true*/ }
         : { matricula: id};
 
       const user = await this.userRepository.findOne({ where: query });
@@ -158,13 +157,48 @@ export class AuthService {
         { returnDocument: 'after' }
       );
 
-      
-
       if (!updateResult) {
         throw new InternalServerErrorException('Failed to update user');
       }
 
-      //TODO: Remove permissions
+      await this.accessRightsService.remove(id);
+
+      return updateResult;
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error; // Mantiene el código de error original
+      }
+      
+      throw new InternalServerErrorException('Unexpected error updating user');
+      
+    }
+  }
+
+  async reactiveUser(id: string) {
+    try {
+      const query = ObjectId.isValid(id)
+        ? { _id: new ObjectId(id), /*isActive: false*/ }
+        : { matricula: id};
+
+      const user = await this.userRepository.findOne({ where: query });
+
+      if (!user) {
+        throw new NotFoundException('The user is not found');
+      }
+
+      if (user.isActive) {
+        throw new BadRequestException('The user is already active');
+      }
+
+      const updateResult = await this.userRepository.findOneAndUpdate(
+        { _id: user.id },
+        { $set: { isActive: true } },
+        { returnDocument: 'after' }
+      );
+
+      if (!updateResult) {
+        throw new InternalServerErrorException('Failed to update user');
+      }
 
       return updateResult;
     } catch (error) {

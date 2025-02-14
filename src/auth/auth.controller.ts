@@ -56,8 +56,18 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Request successful. User disabled successfully'})
   @ApiResponse({ status: 404, description: 'User not found'})
   @ApiResponse({ status: 400, description: 'User already deactivated'})
-  async userStatus(@Param('id') id: string) {
+  async disableUser(@Param('id') id: string) {
     return this.authService.desactiveUsers(id);
+  }
+
+  @Patch('enable/:id')
+  @ApiOperation({ summary: 'Enable a user', description: 'Enables a user by their unique ID.'})
+  @ApiParam({ name: 'id', required: true, description: 'Unique identifier of the user', example: '65d5c1ab2f4f4d3e9c8b4567'})
+  @ApiResponse({ status: 200, description: 'Request successful. User enabled successfully'})
+  @ApiResponse({ status: 404, description: 'User not found'})
+  @ApiResponse({ status: 400, description: 'User already active'})
+  async enableUser(@Param('id') id: string) {
+    return this.authService.reactiveUser(id);
   }
 
 

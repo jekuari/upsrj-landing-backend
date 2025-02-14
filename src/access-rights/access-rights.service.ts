@@ -47,7 +47,8 @@ export class AccessRightsService {
   }
 
   async update(id: string, moduleName: string, updateAccessRightDto: UpdateAccessRightDto) {
-    
+
+    // Check if user exists and is active
     await this.authService.checkUserStatus(id);
 
     const permissions = await this.AccessRightRepository.find({

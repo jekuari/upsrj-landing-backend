@@ -1,9 +1,9 @@
 import { SetMetadata } from '@nestjs/common';
-import { ValidRoles } from '../interfaces';
+import { ValidPermissions } from '../interfaces';
 
 export const META_ROLE ='roles';
 
-export const RoleProtected = (...args: ValidRoles[]) =>{ 
+export const RoleProtected = (...args: ValidPermissions[]) =>{ 
     
     
     return SetMetadata(META_ROLE, args);
