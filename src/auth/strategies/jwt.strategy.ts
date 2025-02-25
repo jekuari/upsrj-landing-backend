@@ -7,6 +7,7 @@ import { MongoRepository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { ExtractJwt } from 'passport-jwt';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -16,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     configService: ConfigService
   ) {
     super({
-      secretOrKey: configService.get<string>('JWT_SECRET'),
+      secretOrKey: configService.get('JWT_SECRET'),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
   }
@@ -24,8 +25,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload): Promise<User> {
     const { id } = payload;
 
-    // Buscar el usuario con el ObjectId de MongoDB
-    const user = await this.userRepository.findOneBy({ _id: id });
+  // Convertir `id` a ObjectId 
+  const objectId = new ObjectId(id);
+
+  // Buscar en la base de datos
+  const user = await this.userRepository.findOneBy({ _id: objectId });
 
     if (!user) {
       throw new UnauthorizedException('Token not valid');

@@ -71,7 +71,7 @@ export class AuthService {
     });
     
     // Verificar si el usuario existe
-    if (!user) {
+    if (!user || !user.isActive) {
         throw new UnauthorizedException(`Credenciales incorrectas`);
     }
     
@@ -86,13 +86,16 @@ export class AuthService {
     delete user.password;
     
     return {
-      ...user,
+      email: user.email,
+      fullName: user.fullName,
+      matricula: user.matricula,
       token: this.getJwtToken({ id: user.id.toString() })  // Convierte ObjectId a string
     };
   }
 
   private getJwtToken(payload: JwtPayload) {
-    return this.jwtService.sign(payload);
+    const token = this.jwtService.sign(payload);
+    return token;
   }
 
   private handleDBErrors(error: any): never {

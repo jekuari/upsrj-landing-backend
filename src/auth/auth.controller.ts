@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, SetMetadata, Query} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, SetMetadata, Query, ParseBoolPipe} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { get, request } from 'http';
 
@@ -10,6 +10,9 @@ import { Auth } from './decorators/auth.decorator';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { UserRoleGuard } from './guards/user-role.guard';
+import { META_MODULES, META_PERMISSIONS } from './decorators';
+import { ValidModules, ValidPermissions } from './interfaces';
 
 @Controller('auth')
 export class AuthController {
@@ -88,4 +91,46 @@ export class AuthController {
     return this.authService.checkUserStatus(id)
   }
 
+  //Prueba (rutas privadas)
+  @Get('private')
+  @UseGuards(AuthGuard())
+  testingPrivateRoute(
+    //@Req() request: Express.Request
+    @GetUser() user: User,
+    @GetUser('isActive') userStatus: boolean
+  ){
+    return {
+      ok: true,
+      message: 'This is a private route',
+      user,
+      userStatus
+    }
+  }
+
+  //Prueba (rutas privadas)
+  @Get('private2')
+  @SetMetadata(META_PERMISSIONS, ['canRead', 'canUpdate'])
+  @SetMetadata(META_MODULES, ['Authentication', 'Permission'])
+  @UseGuards(AuthGuard(), UserRoleGuard)
+  testingPrivateRoute2(
+    @GetUser() user: User
+  ){
+    return {
+      ok: true,
+      message: 'This is a private route',
+      user
+    }
+  }
+
+  @Get('private3')
+  @Auth([ValidPermissions.canCreate, ValidPermissions.canDelete], [ValidModules.Authentication, ValidModules.Permission])
+  testingPrivateRoute3(
+    @GetUser() user: User
+  ){
+    return {
+      ok: true,
+      message: 'This is a private route',
+      user
+    }
+  }
 }

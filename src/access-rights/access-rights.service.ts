@@ -71,6 +71,7 @@ export class AccessRightsService {
     return updatedPermissions;
 }
 
+  //Remove (soft delete) all access rights for a user
   async remove(id: string) {
     const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(id) } });
 
@@ -90,6 +91,7 @@ export class AccessRightsService {
     return permissions
   }
 
+  //Create access rights for a user when created
   async createPermission(user: User): Promise<AccessRight[]> {
     // Obtener todos los módulos del sistema
     const modules = await this.SystemModuleRepository.find();
@@ -113,5 +115,10 @@ export class AccessRightsService {
     return this.AccessRightRepository.save(permissions);
 }
 
+async getPermissionsByUserId(userId: string): Promise<AccessRight[]> {
+  return this.AccessRightRepository.find({
+    where: { userId: new ObjectId(userId) }
+  });
+}
 
 }
