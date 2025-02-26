@@ -2,7 +2,7 @@ import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErro
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 
-import * as bcrypt from 'bcrypt';  
+import * as bcrypt from 'bcryptjs';  
 import { MongoRepository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { LoginUserDto, CreateUserDto } from './dto';
