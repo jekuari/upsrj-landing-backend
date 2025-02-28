@@ -1,6 +1,7 @@
 import { Entity, ObjectIdColumn, ObjectId, Column } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
+// Entidad que representa un módulo del sistema
 @Entity('system_modules')
 export class SystemModule {
     @ObjectIdColumn()

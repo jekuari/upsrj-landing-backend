@@ -14,6 +14,7 @@ export class SeedController {
   @ApiResponse({ status: 200, description: 'The modules already exist in the database.' })
   @ApiResponse({ status: 400, description: 'The password is wrong' })
   @Get(':password')
+  // Ejecutar el seed con la contraseña proporcionada
   executeSeed(@Param('password') password: string) {
     return this.seedService.executeSeed(password);
   }

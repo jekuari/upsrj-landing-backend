@@ -7,13 +7,15 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { GetUser } from './decorators/get-user.decorator';
 import { Auth } from './decorators/auth.decorator';
-import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { UserRoleGuard } from './guards/user-role.guard';
 import { META_MODULES, META_PERMISSIONS } from './decorators';
 import { ValidModules, ValidPermissions } from './interfaces';
+import { RawHeaders } from './decorators/get-rawHeaders.decorator';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -24,19 +26,22 @@ export class AuthController {
     return this.authService.findAll(paginationDto);
   }
 
-  @ApiResponse({ status: 201, description: 'User was created successfully', type: CreateUserDto})
-  @ApiResponse({ status: 400, description: 'Bad request due to invalid input' })
-  @ApiResponse({ status: 403, description: 'Forbidden. Token related issues' })
   @Post('register')
-  createUser(@Body() createUserDto:CreateUserDto) {
+  @ApiResponse({ status: 201, description: 'User was created' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error' })
+  // Registro de un nuevo usuario
+  async create(@Body() createUserDto: CreateUserDto) {
+    // Cambiamos el tipo de retorno para que coincida con lo que realmente devuelve el servicio
     return this.authService.create(createUserDto);
   }
 
-  @ApiResponse({ status: 201, description: 'User logged in', type: LoginUserDto})
-  @ApiResponse({ status: 400, description: 'Unauthorized due to mismatching credentials' })
-  @ApiResponse({ status: 403, description: 'Forbidden. Token related issues' })
   @Post('login')
-  loginUser(@Body() loginUserDto:LoginUserDto) {
+  @ApiResponse({ status: 201, description: 'User was logged in' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error' })
+  // Inicio de sesión de un usuario
+  async login(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
   }
 
@@ -91,27 +96,35 @@ export class AuthController {
     return this.authService.checkUserStatus(id)
   }
 
-  //Prueba (rutas privadas)
   @Get('private')
   @UseGuards(AuthGuard())
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Private route' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  // Ruta privada accesible solo para usuarios autenticados
   testingPrivateRoute(
-    //@Req() request: Express.Request
+    @Req() request: Express.Request,
     @GetUser() user: User,
-    @GetUser('isActive') userStatus: boolean
-  ){
+    @GetUser('email') userEmail: string,
+    @RawHeaders() rawHeaders: string[],
+  ) {
     return {
       ok: true,
-      message: 'This is a private route',
+      message: 'Hola Mundo Private',
       user,
-      userStatus
-    }
+      userEmail,
+      rawHeaders,
+    };
   }
 
-  //Prueba (rutas privadas)
   @Get('private2')
   @SetMetadata(META_PERMISSIONS, ['canRead', 'canUpdate'])
   @SetMetadata(META_MODULES, ['Authentication', 'Permission'])
   @UseGuards(AuthGuard(), UserRoleGuard)
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Private route' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  // Ruta privada accesible solo para usuarios con permisos específicos
   testingPrivateRoute2(
     @GetUser() user: User
   ){

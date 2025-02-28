@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, Matches, MaxLength, MinLength, IsOptional, IsBoolean } from 'class-validator';
 
-
+// DTO para la actualización de un usuario
 export class UpdateUserDto{
     @ApiProperty({
         example: 'AndreaStudent@gmail.com',

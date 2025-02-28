@@ -15,4 +15,5 @@ import { AccessRightsModule } from 'src/access-rights/access-rights.module';
     AuthModule
   ]
 })
+// Módulo que gestiona la inicialización de datos en la base de datos
 export class SeedModule {}

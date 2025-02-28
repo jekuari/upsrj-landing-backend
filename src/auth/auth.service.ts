@@ -22,6 +22,7 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
+  // Crear un nuevo usuario
   async create(createUserDto: CreateUserDto) {
     try {
       const { password, ...userData } = createUserDto;
@@ -39,10 +40,12 @@ export class AuthService {
       // Guardar el usuario en la base de datos
       const newUser =  await this.userRepository.save(user);
       
+      // Crear permisos de acceso para el nuevo usuario
       await this.accessRightsService.createPermission(user);
       // Eliminar datos sensibles antes de retornar
       delete newUser.password;
   
+      // Retornar un objeto simple, no como instancia de User
       return {
         ...newUser,
         token: this.getJwtToken({ id: newUser.id.toString() }),  // Convertir ObjectId a string

@@ -1,5 +1,6 @@
 import { createParamDecorator, ExecutionContext, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
 
+// Decorador personalizado para obtener el usuario de la solicitud
 export const GetUser = createParamDecorator(
     (data:string, ctx:ExecutionContext)=> {
         const req = ctx.switchToHttp().getRequest();

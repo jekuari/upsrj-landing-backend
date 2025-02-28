@@ -4,6 +4,7 @@ import { CreateAccessRightDto } from './dto/create-access-right.dto';
 import { UpdateAccessRightDto } from './dto/update-access-right.dto';
 import { ApiResponse } from '@nestjs/swagger';
 
+// Controlador que maneja las solicitudes HTTP relacionadas con los derechos de acceso
 @Controller('access-rights')
 export class AccessRightsController {
   constructor(private readonly accessRightsService: AccessRightsService) {}

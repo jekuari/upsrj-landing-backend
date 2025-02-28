@@ -2,151 +2,127 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
 
+# UPSRJ Landing Backend
 
+## Prerequisites
 
-## Before that you download the project
+Before you download the project, make sure you have the following installed:
 
-### 0.- Node installation
-Node.js is an open-source, cross-platform runtime environment that allows you to run JavaScript code on the server-side, outside of the browser. 
-
+### Node.js
+Node.js is an open-source, cross-platform runtime environment that allows you to run JavaScript code on the server-side.
 ```
 https://nodejs.org/es
-
 ```
 
-### 1.- pnpm installation (If you don't have the package manager install)
-pnpm is a fast, disk space-efficient package manager for JavaScript and Node.js. It stands for Performant Node Package Manager and is an alternative to npm and Yarn.
-
+### pnpm
+pnpm is a fast, disk space-efficient package manager for JavaScript and Node.js.
 ```bash
 npm install -g pnpm
-
 ```
 
-### 2.- NestJs Installation (If you don't have the ClI install)
-
-To get started, you can either scaffold the project with the Nest CLI, or clone a starter project (both will produce the same outcome).
-[Nest](https://docs.nestjs.com/first-steps) First Steps.
+### NestJS CLI
+The Nest CLI is a command-line interface tool that helps you initialize, develop, and maintain your Nest applications.
 ```bash
 npm i -g @nestjs/cli
-
 ```
 
+## Project Setup
 
-
-### Inside of the project
-
-## 0.- Clone the project
-
+### 1. Clone the project
 ```bash
-
 $ git clone <NombreDelProyecto>
-
 ```
 
-## 1.- Installation
-
+### 2. Install dependencies
 ```bash
 $ pnpm install
-
 ```
 
-## 2.- Create the  __.env__ 
+### 3. Configure Environment Variables
 This environment will help you with the connection to the database (Postgres).
 "This connection is for when you use it with Postgres directly installed on your system."
-
+#### Option A: For direct Postgres installation
+Create a `.env` file in the project root with:
 ```bash
 JWT_SECRET='Secreto'
 PORT=3002
 DB_PASSWORD=root
 DB_NAME=NameOFTheDatabase
 DB_HOST=localhost
-#Con Postgres directo
 DB_PORT=5432
 DB_USERNAME=postgres
 CONTAINER_NAME=NameOFTheContainer
 
-#Esta contraseña es para la creacion del seed , se mandan en el @param
+# Password for seed creation
 PASSWORD_SEED='SecretoContraseña'
-
 ```
 
-## 2.1.- Create the  __.env__ 
-This environment will help you with the connection to the database (Postgres).
-"This connection is for when you use it with Docker."
-
+#### Option B: For Docker setup
+Create a `.env` file in the project root with:
 ```bash
 JWT_SECRET='Secreto'
 PORT=3002
 DB_PASSWORD=root
 DB_NAME=NameOFTheDatabase
 DB_HOST=localhost
-#Con Docker-compose
 DB_PORT=5434
-
 DB_USERNAME=postgres
 CONTAINER_NAME=NameOFTheContainer
 
-#Esta contraseña es para la creacion del seed , se mandan en el @param
+# Password for seed creation
 PASSWORD_SEED='SecretoContraseña'
-
 ```
 
-## 2.2.- Set up the database with the project in Docker (Dockerize)
-
+### 4. Database Setup with Docker
 ```bash
-
 $ docker-compose up -d
-
 ```
 
-
-## 3.-Running the app
+## Running the Application
 
 ```bash
-# development
+# Development mode
 $ pnpm run start
 
-# watch mode
+# Watch mode (auto-reload)
 $ pnpm run start:dev
 
-# production mode
+# Production mode
 $ pnpm run start:prod
 ```
 
+## Deployment Guide
 
-## 4.-Manera de hacer despliegue 
-
-1. Crear el archivo ``` .env ```
-2. Llenar las variables de entorno de prod
-3. Crear la imagen 
+1. Create the `.env` file
+2. Configure production environment variables
+3. Build the Docker image:
+```
+docker-compose -f docker-compose.prod.yaml --env-file .env up --build
+```
+4. Reload existing image:
+```
+docker-compose -f docker-compose.prod.yaml --env-file .env.prod up -d
 ```
 
- docker-compose -f docker-compose.prod.yaml --env-file .env up --build
-
-```
-
-4. recargar la imagen si ya la tenias 
-```
- docker-compose -f docker-compose.prod.yaml --env-file .env.prod up -d
-```
-
-* Nest
-
-
-## STACK Utilizado
-
+## Technology Stack
 
 * Postgres
-* AHORA MONGODB
+* MongoDB
 ```
 npm i mongodb@5.9.2
 ```
 * NodeJs
 * Docker / Docker Compose
-* Nest
+* NestJS
 
-## MAC (borrar prettier)
+## Development Notes
 
+### For MAC users (remove prettier)
 ```
 pnpm remove prettier eslint-config-prettier eslint-plugin-prettier
+```
+
+### Bcrypt migration
+```
+pnpm i bcryptjs
 ```

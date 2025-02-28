@@ -1,6 +1,7 @@
 import { Entity, ObjectIdColumn, ObjectId, Column } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
+// Entidad que representa los derechos de acceso de un usuario a un módulo del sistema
 @Entity('access_rights')
 export class AccessRight {
     @ObjectIdColumn()
