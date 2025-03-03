@@ -1,14 +1,12 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
-import { ValidPermissions, ValidModules } from '../interfaces';
+import { Authentication, Permission } from '../interfaces';
 import { PermissionProtected } from './permission-protected.decorator';
 import { AuthGuard } from '@nestjs/passport';
-import { UserRoleGuard } from '../guards/user-role.guard';
+import { UserPermissionGuard } from '../guards/user-permission.guard';
 
-// Decorador personalizado para proteger rutas con permisos y módulos específicos
-export function Auth(permissions: ValidPermissions[], modules: ValidModules[] ) {
-
+export function Auth(permissions: (Authentication | Permission)[]) {
   return applyDecorators(
-    PermissionProtected(permissions, modules), // Aplica el decorador de permisos
-    UseGuards( AuthGuard('jwt'), UserRoleGuard), // Aplica los guards de autenticación y roles de usuario
+    PermissionProtected(permissions),
+    UseGuards(AuthGuard('jwt'), UserPermissionGuard),
   );
 }

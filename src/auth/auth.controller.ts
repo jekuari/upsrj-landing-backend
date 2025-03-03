@@ -1,7 +1,4 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, SetMetadata, Query, ParseBoolPipe} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { get, request } from 'http';
-
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
@@ -10,11 +7,7 @@ import { Auth } from './decorators/auth.decorator';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { UserRoleGuard } from './guards/user-role.guard';
-import { META_MODULES, META_PERMISSIONS } from './decorators';
-import { ValidModules, ValidPermissions } from './interfaces';
-import { RawHeaders } from './decorators/get-rawHeaders.decorator';
-
+import { Authentication, Permission  } from './interfaces';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
@@ -96,47 +89,9 @@ export class AuthController {
     return this.authService.checkUserStatus(id)
   }
 
+  //Prueba: Ruta privada con decorador personalizado Auth
   @Get('private')
-  @UseGuards(AuthGuard())
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Private route' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  // Ruta privada accesible solo para usuarios autenticados
-  testingPrivateRoute(
-    @Req() request: Express.Request,
-    @GetUser() user: User,
-    @GetUser('email') userEmail: string,
-    @RawHeaders() rawHeaders: string[],
-  ) {
-    return {
-      ok: true,
-      message: 'Hola Mundo Private',
-      user,
-      userEmail,
-      rawHeaders,
-    };
-  }
-
-  @Get('private2')
-  @SetMetadata(META_PERMISSIONS, ['canRead', 'canUpdate'])
-  @SetMetadata(META_MODULES, ['Authentication', 'Permission'])
-  @UseGuards(AuthGuard(), UserRoleGuard)
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Private route' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  // Ruta privada accesible solo para usuarios con permisos específicos
-  testingPrivateRoute2(
-    @GetUser() user: User
-  ){
-    return {
-      ok: true,
-      message: 'This is a private route',
-      user
-    }
-  }
-
-  @Get('private3')
-  @Auth([ValidPermissions.canCreate, ValidPermissions.canDelete], [ValidModules.Authentication, ValidModules.Permission])
+  @Auth([Authentication.canRead, Permission.canRead])
   testingPrivateRoute3(
     @GetUser() user: User
   ){
