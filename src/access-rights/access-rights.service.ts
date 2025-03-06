@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateAccessRightDto } from './dto/update-access-right.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,6 +26,17 @@ export class AccessRightsService {
   // Obtener derechos de acceso para un usuario en un módulo específico
   async findOne(userId: string, moduleName: string) { 
 
+    if (!ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid user id format: input must be a 24 character hex string');
+    }
+
+    // Verificar si el módulo existe
+    const module = await this.SystemModuleRepository.findOne({ where: { moduleName: moduleName } });
+
+    if (!module) {
+      throw new BadRequestException(`Module ${moduleName} not found`);
+    }
+
     const permissions = await this.AccessRightRepository.findOne({ where: { userId: new ObjectId(userId), moduleName: moduleName}});
 
     if (!permissions) {
@@ -38,9 +49,14 @@ export class AccessRightsService {
 
   // Obtener todos los derechos de acceso para un usuario
   async findAll(userId: string) {
+
+    if (!ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid user id format: input must be a 24 character hex string');
+    }
+
     const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(userId),}});
 
-    if (!permissions) {
+    if (!permissions || permissions.length === 0) {
       throw new NotFoundException('Permissions not found');
     }
 
@@ -48,17 +64,28 @@ export class AccessRightsService {
   }
 
   // Actualizar derechos de acceso para un usuario en un módulo específico
-  async update(id: string, moduleName: string, updateAccessRightDto: UpdateAccessRightDto) {
+  async update(userId: string, moduleName: string, updateAccessRightDto: UpdateAccessRightDto) {
+
+    if (!ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid user id format: input must be a 24 character hex string');
+    }
 
     // Verificar si el usuario existe y está activo
-    await this.authService.checkUserStatus(id);
+    await this.authService.checkUserStatus(userId);
+
+    // Verificar si el módulo existe
+    const module = await this.SystemModuleRepository.findOne({ where: { moduleName: moduleName } });
+
+    if (!module) {
+      throw new BadRequestException(`Module ${moduleName} not found`);
+    }
 
     const permissions = await this.AccessRightRepository.find({
-        where: { userId: new ObjectId(id), moduleName: moduleName }
+        where: { userId: new ObjectId(userId), moduleName: moduleName }
     });
 
     if (!permissions) {
-        throw new NotFoundException(`Permissions not found for user ${id} in module ${moduleName}`);
+        throw new NotFoundException(`Permissions not found for user ${userId} in module ${moduleName}`);
     }
 
     const updatedPermissions = permissions.map(permission => {
@@ -74,8 +101,16 @@ export class AccessRightsService {
 }
 
   // Eliminar (borrado lógico) todos los derechos de acceso para un usuario
-  async remove(id: string) {
-    const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(id) } });
+  async remove(userId: string) {
+
+    if (!ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid user id format: input must be a 24 character hex string');
+    }
+
+    // Verificar si el usuario existe y está activo
+    await this.authService.checkUserStatus(userId);
+
+    const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(userId) } });
 
     if (!permissions) {
       throw new NotFoundException('Permissions not found');
