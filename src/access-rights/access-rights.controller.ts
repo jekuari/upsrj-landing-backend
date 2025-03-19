@@ -10,6 +10,7 @@ export class AccessRightsController {
 
   @ApiOperation({ summary: 'Find permissions per module per user', description: 'Retrieves the permissions for a user in a specific module.'})
   @ApiParam({ name: 'userId', required: true, description: 'Unique identifier of the user', example: '65d5c1ab2f4f4d3e9c8b4567'})
+  @ApiQuery({ name: 'module', required: true, description: 'Name of the module', example: 'Authentication'})
   @ApiResponse({ status: 200, description: 'Request successful'})
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (moduleName)'})
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (userId)'})
@@ -31,7 +32,7 @@ export class AccessRightsController {
 
   @ApiOperation({ summary: 'Update permissions per module per user', description: 'Updates the permissions for a user in a specific module.'})
   @ApiParam({ name: 'userId', required: true, description: 'Unique identifier of the user', example: '65d5c1ab2f4f4d3e9c8b4567'})
-  @ApiQuery({ name: 'module', required: true, description: 'Name of the module', example: 'users'})
+  @ApiQuery({ name: 'module', required: true, description: 'Name of the module', example: 'Authentication'})
   @ApiResponse({ status: 200, description: 'Permissions updated successfully'})
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (moduleName)'})
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (userId)'})

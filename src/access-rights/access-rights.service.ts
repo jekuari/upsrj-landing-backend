@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UpdateAccessRightDto } from './dto/update-access-right.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,14 +21,15 @@ export class AccessRightsService {
     @InjectRepository(SystemModule)
     private readonly SystemModuleRepository: Repository<SystemModule>,
 
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ){}
 
   // Obtener derechos de acceso para un usuario en un módulo específico
-  async findOne(userId: string, moduleName: string) { 
+  async findOne(id: string, moduleName: string) { 
 
-    if (!ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid user id format: input must be a 24 character hex string');
-    }
+    // Verificar si el id del usuario tiene un formato válido
+    const userid = await this.validateUserIdorMatricula(id);
 
     // Verificar si el módulo existe
     const module = await this.SystemModuleRepository.findOne({ where: { moduleName: moduleName } });
@@ -37,7 +38,7 @@ export class AccessRightsService {
       throw new BadRequestException(`Module ${moduleName} not found`);
     }
 
-    const permissions = await this.AccessRightRepository.findOne({ where: { userId: new ObjectId(userId), moduleName: moduleName}});
+    const permissions = await this.AccessRightRepository.findOne({ where: { userId: new ObjectId(userid), moduleName: moduleName}});
 
     if (!permissions) {
       throw new NotFoundException('Permissions not found');
@@ -48,13 +49,12 @@ export class AccessRightsService {
   }
 
   // Obtener todos los derechos de acceso para un usuario
-  async findAll(userId: string) {
+  async findAll(id: string) {
 
-    if (!ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid user id format: input must be a 24 character hex string');
-    }
+    // Verificar si el id del usuario tiene un formato válido
+    const userid = await this.validateUserIdorMatricula(id);
 
-    const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(userId),}});
+    const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(userid),}});
 
     if (!permissions || permissions.length === 0) {
       throw new NotFoundException('Permissions not found');
@@ -64,14 +64,13 @@ export class AccessRightsService {
   }
 
   // Actualizar derechos de acceso para un usuario en un módulo específico
-  async update(userId: string, moduleName: string, updateAccessRightDto: UpdateAccessRightDto) {
+  async update(id: string, moduleName: string, updateAccessRightDto: UpdateAccessRightDto) {
 
-    if (!ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid user id format: input must be a 24 character hex string');
-    }
+    // Verificar si el id del usuario tiene un formato válido
+    const userid = await this.validateUserIdorMatricula(id);
 
     // Verificar si el usuario existe y está activo
-    await this.authService.checkUserStatus(userId);
+    await this.authService.checkUserStatus(userid);
 
     // Verificar si el módulo existe
     const module = await this.SystemModuleRepository.findOne({ where: { moduleName: moduleName } });
@@ -81,11 +80,11 @@ export class AccessRightsService {
     }
 
     const permissions = await this.AccessRightRepository.find({
-        where: { userId: new ObjectId(userId), moduleName: moduleName }
+        where: { userId: new ObjectId(userid), moduleName: moduleName }
     });
 
     if (!permissions) {
-        throw new NotFoundException(`Permissions not found for user ${userId} in module ${moduleName}`);
+        throw new NotFoundException(`Permissions not found for user ${userid} in module ${moduleName}`);
     }
 
     const updatedPermissions = permissions.map(permission => {
@@ -101,16 +100,15 @@ export class AccessRightsService {
 }
 
   // Eliminar (borrado lógico) todos los derechos de acceso para un usuario
-  async remove(userId: string) {
+  async remove(id: string) {
 
-    if (!ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid user id format: input must be a 24 character hex string');
-    }
+    // Verificar si el id del usuario tiene un formato válido
+    const userid = await this.validateUserIdorMatricula(id);
 
     // Verificar si el usuario existe y está activo
-    await this.authService.checkUserStatus(userId);
+    await this.authService.checkUserStatus(userid);
 
-    const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(userId) } });
+    const permissions = await this.AccessRightRepository.find({ where: { userId: new ObjectId(userid) } });
 
     if (!permissions) {
       throw new NotFoundException('Permissions not found');
@@ -150,13 +148,37 @@ export class AccessRightsService {
 
     // Guardar todos los permisos en la base de datos
     return this.AccessRightRepository.save(permissions);
+  }
+
+  // Validar si el ID de usuario o matrícula es válido
+  async validateUserIdorMatricula(userIdOrMatricula: string) {
+    try {
+      const query = ObjectId.isValid(userIdOrMatricula)
+        ? { _id: new ObjectId(userIdOrMatricula) }
+        : { matricula: userIdOrMatricula };
+
+      const user = await this.userRepository.findOne({ where: query });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const userId = user.id.toString();
+      
+      return userId;
+  }
+  catch (error) {
+    console.error('Error in validateUserIdorMatricula:', error.message);
+    throw new InternalServerErrorException(`Error validating user ID or matricula: ${error.message}`);
+  }
 }
 
 // Obtener permisos por ID de usuario
 async getPermissionsByUserId(userId: string): Promise<AccessRight[]> {
+
   return this.AccessRightRepository.find({
     where: { userId: new ObjectId(userId) }
   });
-}
+  }
 
 }

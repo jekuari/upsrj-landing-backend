@@ -140,83 +140,46 @@ export class AuthService {
       throw new InternalServerErrorException('Unexpected error updating user');
     }
   }
+
+  // Cambiar el estado de un usuario (activo/inactivo)
+  async toggleUserStatus(id: string) {
+    try {
+      const query = ObjectId.isValid(id)
+        ? { _id: new ObjectId(id) }
+        : { matricula: id };
   
-  async desactiveUsers(id: string) {
-    try {
-      const query = ObjectId.isValid(id)
-        ? { _id: new ObjectId(id), /*isActive: true*/ }
-        : { matricula: id};
-
       const user = await this.userRepository.findOne({ where: query });
-
+  
       if (!user) {
         throw new NotFoundException('The user is not found');
       }
-
-      if (!user.isActive) {
-        throw new BadRequestException('The user is already deactivated');
+  
+      const newStatus = !user.isActive;
+  
+      if (!newStatus) {
+        await this.accessRightsService.remove(id);
       }
-
+  
       const updateResult = await this.userRepository.findOneAndUpdate(
         { _id: user.id },
-        { $set: { isActive: false } },
+        { $set: { isActive: newStatus } },
         { returnDocument: 'after' }
       );
-
+  
       if (!updateResult) {
         throw new InternalServerErrorException('Failed to update user');
       }
-
-      await this.accessRightsService.remove(id);
-
-      return updateResult;
+  
+      return { isActive: updateResult.isActive };
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error; // Mantiene el código de error original
       }
-      
+  
       throw new InternalServerErrorException('Unexpected error updating user');
-      
     }
   }
-
-  async reactiveUser(id: string) {
-    try {
-      const query = ObjectId.isValid(id)
-        ? { _id: new ObjectId(id), /*isActive: false*/ }
-        : { matricula: id};
-
-      const user = await this.userRepository.findOne({ where: query });
-
-      if (!user) {
-        throw new NotFoundException('The user is not found');
-      }
-
-      if (user.isActive) {
-        throw new BadRequestException('The user is already active');
-      }
-
-      const updateResult = await this.userRepository.findOneAndUpdate(
-        { _id: user.id },
-        { $set: { isActive: true } },
-        { returnDocument: 'after' }
-      );
-
-      if (!updateResult) {
-        throw new InternalServerErrorException('Failed to update user');
-      }
-
-      return updateResult;
-    } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
-        throw error; // Mantiene el código de error original
-      }
-      
-      throw new InternalServerErrorException('Unexpected error updating user');
-      
-    }
-  }
-
+  
 
   //Obtener todos los usuarios con paginacion de 10 en 10
   async findAll( paginationDto: PaginationDto) {
@@ -240,7 +203,6 @@ export class AuthService {
     if (!user || !user.isActive) {
       throw new NotFoundException('User not found or inactive');
     }
-
     return user;
   }
 }
