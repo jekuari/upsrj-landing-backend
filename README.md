@@ -13,17 +13,28 @@ Node.js is an open-source, cross-platform runtime environment that allows you to
 ```
 https://nodejs.org/es
 ```
+### Typescript
+TypeScript checks a program for errors before execution, and does so based on the kinds of values, making it a static type checker
+```bash
+npm install -g typescript
+```
 
-### pnpm
+### PNPM
 pnpm is a fast, disk space-efficient package manager for JavaScript and Node.js.
 ```bash
-npm install -g pnpm
+npm install -g pnpm@latest-10
 ```
 
 ### NestJS CLI
 The Nest CLI is a command-line interface tool that helps you initialize, develop, and maintain your Nest applications.
 ```bash
 npm i -g @nestjs/cli
+```
+
+### MongoDB 
+Install MongoDB 
+```bash
+https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.6-signed.msi
 ```
 
 ## Project Setup
@@ -37,6 +48,47 @@ $ git clone <NombreDelProyecto>
 ```bash
 $ pnpm install
 ```
+
+
+
+## Running the Application
+
+```bash
+# Development mode
+$ pnpm run start
+
+# Watch mode (auto-reload)
+$ pnpm run start:dev
+
+# Production mode
+$ pnpm run start:prod
+```
+
+
+## Technology Stack
+
+* Postgres
+* MongoDB
+```
+npm i mongodb@5.9.2
+```
+* NodeJs
+* Docker / Docker Compose
+* NestJS
+
+## Development Notes
+
+### For MAC users (remove prettier)
+```
+pnpm remove prettier eslint-config-prettier eslint-plugin-prettier
+```
+
+### Bcrypt migration
+```
+pnpm i bcryptjs
+```
+
+### Legacy (Before that MongoDB)
 
 ### 3. Configure Environment Variables
 This environment will help you with the connection to the database (Postgres).
@@ -78,19 +130,6 @@ PASSWORD_SEED='SecretoContraseña'
 $ docker-compose up -d
 ```
 
-## Running the Application
-
-```bash
-# Development mode
-$ pnpm run start
-
-# Watch mode (auto-reload)
-$ pnpm run start:dev
-
-# Production mode
-$ pnpm run start:prod
-```
-
 ## Deployment Guide
 
 1. Create the `.env` file
@@ -102,27 +141,4 @@ docker-compose -f docker-compose.prod.yaml --env-file .env up --build
 4. Reload existing image:
 ```
 docker-compose -f docker-compose.prod.yaml --env-file .env.prod up -d
-```
-
-## Technology Stack
-
-* Postgres
-* MongoDB
-```
-npm i mongodb@5.9.2
-```
-* NodeJs
-* Docker / Docker Compose
-* NestJS
-
-## Development Notes
-
-### For MAC users (remove prettier)
-```
-pnpm remove prettier eslint-config-prettier eslint-plugin-prettier
-```
-
-### Bcrypt migration
-```
-pnpm i bcryptjs
 ```
