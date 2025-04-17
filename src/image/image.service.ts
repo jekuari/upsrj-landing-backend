@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import { GridFSBucket, ObjectId } from 'mongodb';
 import * as sharp from 'sharp';
 
 import { Image } from './entities/image.entity';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 /**
  * Lógica de negocio para subir y descargar imágenes mediante GridFS.
@@ -22,7 +24,7 @@ export class ImagesService {
 
   constructor(
     @Inject('GRIDFS_BUCKET') private readonly bucket: GridFSBucket,
-    @InjectRepository(Image) private readonly imageRepo: Repository<Image>,
+    @InjectRepository(Image) private readonly imageRepository: Repository<Image>,
   ) {}
 
   /**
@@ -55,13 +57,13 @@ export class ImagesService {
     this.logger.verbose(`Imagen almacenada en GridFS => ${gridFsId}`);
 
     // 3️⃣  Persistimos metadatos:
-    const image = this.imageRepo.create({
+    const image = this.imageRepository.create({
       filename: file.originalname,
       gridFsId,
       contentType,
     });
 
-    return this.imageRepo.save(image);
+    return this.imageRepository.save(image);
   }
 
   /**
@@ -69,12 +71,83 @@ export class ImagesService {
    * Lanza 404 si el metadato no existe.
    */
   async stream(gridId: ObjectId) {
-    const meta = await this.imageRepo.findOneBy({ gridFsId: gridId });
+    const meta = await this.imageRepository.findOneBy({ gridFsId: gridId });
     if (!meta) {
       throw new NotFoundException('Imagen no encontrada');
     }
 
     this.logger.debug(`Streaming imagen ${gridId}`);
     return { stream: this.bucket.openDownloadStream(gridId), meta };
+  }
+
+
+ /**
+ * Devuelve una página de imágenes con metadatos y la URL para
+ * descargarlas/visualizarlas individualmente.
+ */
+async findAll(
+  paginationDto?: PaginationDto,
+): Promise<{
+  total: number;
+  limit: number;
+  offset: number;
+  data: {
+    id: string;
+    filename: string;
+    contentType: string;
+    createdAt: Date;
+    url: string;
+  }[];
+}> {
+  // Valores por defecto + validación básica 1‑100
+  const { limit = 10, offset = 0 } = paginationDto || {};
+  const safeLimit  = Math.min(Math.max(limit, 1), 100);
+  const safeOffset = Math.max(offset, 0);
+
+  // Recupera la página y el total de registros
+  const [images, total] = await this.imageRepository.findAndCount({
+    take: safeLimit,
+    skip: safeOffset,
+    order: { createdAt: 'DESC' },
+  });
+
+  // Mapea a DTO ligero con la URL del endpoint GET
+  const data = images.map(img => ({
+    id:         img.gridFsId.toString(),
+    filename:   img.filename,
+    contentType: img.contentType,
+    createdAt:  img.createdAt,
+    url:        `/api/files/product/${img.gridFsId}`,
+  }));
+
+  return { total, limit: safeLimit, offset: safeOffset, data };
+}
+
+
+  /**
+   * Elimina la imagen (archivo + metadatos).
+   * @returns { id: string, deleted: boolean }
+   */
+  async deleteImage(gridId: ObjectId): Promise<{ id: string; deleted: boolean }> {
+    // 1️⃣  Verifica que exista el metadato (sin abrir streams)
+    const meta = await this.imageRepository.findOneBy({ gridFsId: gridId });
+    if (!meta) {
+      throw new NotFoundException('Imagen no encontrada');
+    }
+
+    // 2️⃣  Borra el archivo binario de GridFS
+    try {
+      await this.bucket.delete(gridId);
+      this.logger.verbose(`Archivo GridFS ${gridId} eliminado`);
+    } catch (err: any) {
+      this.logger.error(`Error al borrar GridFS ${gridId}: ${err.message}`, err.stack);
+      throw new InternalServerErrorException('No se pudo eliminar la imagen');
+    }
+
+    // 3️⃣  Borra el documento de metadatos
+    await this.imageRepository.delete({ gridFsId: gridId });
+    this.logger.verbose(`Metadatos Image ${gridId} eliminados`);
+
+    return { id: gridId.toString(), deleted: true };
   }
 }
