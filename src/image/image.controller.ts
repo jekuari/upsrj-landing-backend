@@ -1,111 +1,72 @@
-import { Controller, Get, Post, Param, Delete, Body, Res, HttpStatus, StreamableFile } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+// src/images/images.controller.ts
+import {
+  Controller,
+  Post,
+  Get,
+  UploadedFile,
+  UseInterceptors,
+  Res,
+  Param,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  ApiConsumes,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 import { Response } from 'express';
-import { ImageService } from './image.service';
-import { CreateImageDto } from './dto/create-image.dto';
+import { ObjectId } from 'mongodb';
+import { UploadImageResponseDto } from './dto/upload-image.response';
+import { ParseObjectIdPipe } from '../common/pipes/parse-object-id.pipe';
+import { ImagesService } from './image.service';
+import { fileFilter } from './helpers/fileFilter.helper';
 
-/**
- * Controlador para la gestión de imágenes
- * 
- * Proporciona endpoints RESTful para cargar, obtener y eliminar imágenes
- * Las imágenes se procesan mediante Sharp y se almacenan en GridFS de MongoDB
- */
-@ApiTags('Imágenes')
-@Controller('images')
-export class ImageController {
-  constructor(private readonly imageService: ImageService) {}
+@ApiTags('Images')
+@Controller('files/product')
+export class ImagesController {
+  constructor(private readonly imagesService: ImagesService) {}
 
-  /**
-   * Sube una nueva imagen al servidor
-   * 
-   * Procesa una imagen en base64, la redimensiona utilizando Sharp,
-   * la convierte a formato WebP y la almacena en GridFS
-   * 
-   * @param createImageDto DTO con la imagen en base64 y configuraciones
-   * @returns Objeto con el URL e ID de la imagen guardada
-   */
   @Post()
-  @ApiOperation({ summary: 'Subir una nueva imagen' })
-  @ApiResponse({ status: 201, description: 'Imagen subida correctamente' })
-  @ApiResponse({ status: 400, description: 'Datos de imagen inválidos' })
-  @ApiResponse({ status: 500, description: 'Error interno del servidor' })
-  async uploadImage(@Body() createImageDto: CreateImageDto) {
-    return this.imageService.uploadImage(createImageDto);
-  }
+  @ApiOperation({ summary: 'Subir una imagen de producto' })
+  @ApiCreatedResponse({ type: UploadImageResponseDto })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: multer.memoryStorage(),
+      fileFilter,
+      limits: { fileSize: 5_000_000 }, // 5 MB
+    }),
+  )
+  async upload(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<UploadImageResponseDto> {
+    if (!file) {
+      throw new BadRequestException('Asegúrate de enviar una imagen');
+    }
 
-  /**
-   * Obtiene la lista de todas las imágenes disponibles
-   * 
-   * @returns Array con los metadatos de las imágenes activas
-   */
-  @Get()
-  @ApiOperation({ summary: 'Obtener todas las imágenes' })
-  @ApiResponse({ status: 200, description: 'Lista de imágenes disponibles' })
-  async findAll() {
-    return this.imageService.findAll();
-  }
+    const image = await this.imagesService.upload(file);
 
-  /**
-   * Obtiene una imagen específica por su UUID
-   * 
-   * Devuelve la imagen como un archivo binario stream desde GridFS
-   * Este endpoint se usa directamente en las etiquetas <img> del frontend
-   * 
-   * @param uuid UUID de la imagen a obtener
-   * @param res Objeto Response de Express
-   * @returns StreamableFile con la imagen
-   */
-  @Get(':uuid')
-  @ApiOperation({ summary: 'Obtener una imagen por su UUID' })
-  @ApiParam({ name: 'uuid', description: 'UUID de la imagen' })
-  @ApiResponse({ status: 200, description: 'Imagen encontrada' })
-  @ApiResponse({ status: 404, description: 'Imagen no encontrada' })
-  async getImage(
-    @Param('uuid') uuid: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const { stream, contentType } = await this.imageService.getImageByUuid(uuid);
-    
-    // Configurar headers para la respuesta
-    res.set({
-      'Content-Type': contentType,
-      'Content-Disposition': `inline; filename="${uuid}.webp"`,
-    });
-    
-    // Devolver la imagen como stream
-    return new StreamableFile(stream);
-  }
-
-  /**
-   * Elimina una imagen por su UUID
-   * 
-   * No elimina físicamente la imagen de GridFS, solo la marca como inactiva
-   * 
-   * @param uuid UUID de la imagen a eliminar
-   * @returns Mensaje de confirmación
-   */
-  @Delete(':uuid')
-  @ApiOperation({ summary: 'Eliminar una imagen por su UUID' })
-  @ApiParam({ name: 'uuid', description: 'UUID de la imagen a eliminar' })
-  @ApiResponse({ status: 200, description: 'Imagen eliminada correctamente' })
-  @ApiResponse({ status: 404, description: 'Imagen no encontrada' })
-  async deleteImage(@Param('uuid') uuid: string) {
-    return this.imageService.deleteImage(uuid);
-  }
-
-  /**
-   * Endpoint temporal para activar todas las imágenes existentes
-   * 
-   * @returns Número de imágenes activadas
-   */
-  @Post('activate-all')
-  @ApiOperation({ summary: 'Activar todas las imágenes inactivas (temporal)' })
-  @ApiResponse({ status: 200, description: 'Imágenes activadas correctamente' })
-  async activateAllImages() {
-    const count = await this.imageService.activateAllImages();
     return {
-      success: true,
-      message: `${count} imágenes han sido activadas correctamente`
+      id: image.gridFsId.toString(),
+      url: `/files/product/${image.gridFsId}`,
     };
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Descargar/visualizar una imagen por ID' })
+  @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })
+  @ApiOkResponse({ description: 'Devuelve la imagen solicitada (stream)' })
+  async get(
+    @Param('id', ParseObjectIdPipe) id: ObjectId,
+    @Res() res: Response,
+  ) {
+    const { stream, meta } = await this.imagesService.stream(id);
+    res.setHeader('Content-Type', meta.contentType);
+    return stream.pipe(res);
   }
 }
