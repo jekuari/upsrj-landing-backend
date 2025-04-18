@@ -10,6 +10,7 @@ import { ImagesController } from './image.controller';
 
 @Module({
   imports: [
+    
     TypeOrmModule.forFeature([Image]),        // 👈 tu entidad
   ],
   providers: [

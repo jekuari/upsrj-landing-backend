@@ -17,6 +17,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get all users', description: 'Retrieves all users from the database.'})
   @ApiResponse({ status: 200, description: 'Users found successfully'})
   @ApiResponse({ status: 500, description: 'Internal Server Error' })
+  @Auth([Authentication.canRead])
   @Get('getUsers')
   findAll(@Query() paginationDto: PaginationDto) {
     return this.authService.findAll(paginationDto);
@@ -51,6 +52,7 @@ export class AuthController {
   @ApiResponse({ status: 403, description: 'Forbidden. Token related issues'})
   @ApiResponse({ status: 404, description: ''})
   @ApiResponse({ status: 500, description: 'Internal server error'})
+  @Auth([Authentication.canUpdate])
   @Patch('updateUser/:id')
   updateUser(
     @Param('id') id: string,
@@ -65,6 +67,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Bad request due to invalid input' })
   @ApiResponse({ status: 404, description: 'User not found'})
   @Patch('toggle-active/:id')
+  @Auth([Authentication.canUpdate])
   async toggleUserStatus(@Param('id') id: string) {
     return this.authService.toggleUserStatus(id);
   }

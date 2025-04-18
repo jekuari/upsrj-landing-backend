@@ -12,7 +12,7 @@ export enum Permission {
     canUpdate = 'canUpdate',
     canDelete = 'canDelete',
 }
-export enum Image {
+export enum Images {
     canCreate = 'canCreate',
     canRead = 'canRead',
     canUpdate = 'canUpdate',
