@@ -69,20 +69,10 @@ export class AuthController {
     return this.authService.toggleUserStatus(id);
   }
 
-  @ApiResponse({ status: 201, description: 'User check-status', type: User})
-  @ApiResponse({ status: 400, description: 'Bad request due to invalid input' })
-  @ApiResponse({ status: 401, description: 'User not found (request)' })
-  @ApiResponse({ status: 403, description: 'Forbidden. Token related issues' })
-  @Get('check-status')
-  checkAuthStatus(
-    @GetUser() user: User
-  ){
-    return this.authService.checkAuthStatus(user)
-  }
-
   //Prueba (Get user 'isActive' status)
   @ApiOperation({ summary: 'Testing endpoint', description: 'Checks the status of a user by their unique ID.'})
   @Get('status/:id')
+  @Auth([Authentication.canRead, Permission.canRead])
   checkStatus(@Param('id') id: string){
     return this.authService.checkUserStatus(id)
   }

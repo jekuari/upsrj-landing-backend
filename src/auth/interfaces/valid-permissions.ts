@@ -12,3 +12,16 @@ export enum Permission {
     canUpdate = 'canUpdate',
     canDelete = 'canDelete',
 }
+export enum Image {
+    canCreate = 'canCreate',
+    canRead = 'canRead',
+    canUpdate = 'canUpdate',
+    canDelete = 'canDelete',
+}
+
+export enum Puck {
+    canCreate = 'canCreate',
+    canRead = 'canRead',
+    canUpdate = 'canUpdate',
+    canDelete = 'canDelete',
+}
