@@ -32,6 +32,7 @@ import {
   ApiParam,
   ApiTags,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
@@ -47,7 +48,8 @@ import { Image } from './entities/image.entity';
 import { PaginatedImagesDto } from 'src/common/dtos/paginated-images.response';
 
 @ApiTags('Images')                    // Grupo Swagger
-@Controller('files/product')          // Prefijo de ruta
+@Controller('files/product')
+@ApiBearerAuth('JWT-auth')          // Prefijo de ruta
 export class ImagesController {
   constructor(private readonly imagesService: ImagesService) {}
 

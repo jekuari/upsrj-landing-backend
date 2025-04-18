@@ -4,12 +4,13 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { GetUser } from './decorators/get-user.decorator';
 import { Auth } from './decorators/auth.decorator';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Authentication, Permission  } from './interfaces';
 @ApiTags('Auth')
 @Controller('auth')
+@ApiBearerAuth('JWT-auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -87,7 +88,9 @@ export class AuthController {
   }
 
   //Prueba: Ruta privada con decorador personalizado Auth
-  @ApiOperation({ summary: 'Testing endpoint', description: 'This is a private route'})
+  @ApiTags('Pruebas')              //
+  @ApiResponse({ status: 200, description: 'Acceso concedido' })
+  @ApiUnauthorizedResponse({ description: 'Token inválido o ausente' })
   @Get('private')
   @Auth([Authentication.canRead, Permission.canRead])
   testingPrivateRoute3(
