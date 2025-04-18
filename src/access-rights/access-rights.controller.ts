@@ -1,10 +1,11 @@
 import { Controller, Get, Body, Patch, Param, Query } from '@nestjs/common';
 import { AccessRightsService } from './access-rights.service';
 import { UpdateAccessRightDto } from './dto/update-access-right.dto';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 // Controlador que maneja las solicitudes HTTP relacionadas con los derechos de acceso
 @Controller('access-rights')
+@ApiBearerAuth('JWT-auth')
 export class AccessRightsController {
   constructor(private readonly accessRightsService: AccessRightsService) {}
 

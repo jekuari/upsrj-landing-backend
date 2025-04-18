@@ -3,10 +3,11 @@ import { PuckComponentsService } from './puck-components.service';
 import { CreatePuckComponentDto } from './dto/create-puck-component.dto';
 import { UpdatePuckComponentDto } from './dto/update-puck-component.dto';
 import { PuckComponent } from './entities/puck-component.entity';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from '../common/dtos/pagination.dto';
 
 @ApiTags('Puck Components')
+@ApiBearerAuth('JWT-auth')
 @Controller('puck-components')
 export class PuckComponentsController {
     constructor(private readonly puckComponentsService: PuckComponentsService) {}

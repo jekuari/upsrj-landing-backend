@@ -29,7 +29,16 @@ async function bootstrap() {
     .setTitle('UPSRJ Backend API')
     .setDescription('Backend API documentation for the UPSRJ Landing Page')
     .setVersion('1.0')
-    .addBearerAuth()
+    // Agrega la seguridad Bearer
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Introduce tu token JWT en formato: Bearer <token>',
+      },
+      'JWT-auth', // nombre de seguridad
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
