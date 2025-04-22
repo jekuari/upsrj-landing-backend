@@ -43,6 +43,7 @@ import { ParseObjectIdPipe } from '../common/pipes/parse-object-id.pipe';
 import { ImagesService } from './image.service';
 import { fileFilter } from './helpers/fileFilter.helper';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { Image } from './entities/image.entity';
 import { PaginatedImagesDto } from 'src/common/dtos/paginated-images.response';
 
 @ApiTags('Images')                    // Grupo Swagger
@@ -56,7 +57,6 @@ export class ImagesController {
   /* ---------------------------------------------------------------------- */
 
   @Post()
-  //@Auth([Images.canCreate])
   @ApiOperation({ summary: 'Subir una imagen de producto' })
   @ApiCreatedResponse({ type: UploadImageResponseDto })
   @ApiConsumes('multipart/form-data')
@@ -79,6 +79,7 @@ export class ImagesController {
     // Delegamos el guardado al servicio
     const image = await this.imagesService.upload(file);
 
+
     // Construimos la respuesta estándar
     return {
       id: image.gridFsId.toString(),
@@ -91,7 +92,6 @@ export class ImagesController {
   /* ---------------------------------------------------------------------- */
 
   @Get(':id')
-  //@Auth([Images.canRead])
   @ApiOperation({ summary: 'Descargar/visualizar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })
   @ApiOkResponse({ description: 'Devuelve la imagen solicitada (stream)' })
@@ -111,7 +111,6 @@ export class ImagesController {
 
  /** Lista paginada de imágenes (metadatos + URL) */
 @Get()
-//@Auth([Images.canRead])
 @ApiOperation({ summary: 'Listar imágenes paginadas' })
 @ApiOkResponse({ type: PaginatedImagesDto })
 @ApiQuery({ name: 'limit',  required: false, type: Number, example: 10 })
@@ -126,7 +125,6 @@ async findAll(
   /* ---------------------------------------------------------------------- */
 
   @Delete(':id')
-  //@Auth([Images.canDelete])
   @ApiOperation({ summary: 'Eliminar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })
   @ApiNoContentResponse({ description: 'Imagen eliminada correctamente' })

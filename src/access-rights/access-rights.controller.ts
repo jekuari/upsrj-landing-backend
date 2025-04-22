@@ -5,6 +5,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@n
 import { Auth } from 'src/auth/decorators';
 import { Permission } from 'src/auth/interfaces';
 
+
 // Controlador que maneja las solicitudes HTTP relacionadas con los derechos de acceso
 @Controller('access-rights')
 @ApiBearerAuth('JWT-auth')
