@@ -45,6 +45,7 @@ import { fileFilter } from './helpers/fileFilter.helper';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Image } from './entities/image.entity';
 import { PaginatedImagesDto } from 'src/common/dtos/paginated-images.response';
+import { Auth } from 'src/auth/decorators';
 
 @ApiTags('Images')                    // Grupo Swagger
 @Controller('files/product')
@@ -56,6 +57,7 @@ export class ImagesController {
   /*  POST /files/product – Carga de imagen                                 */
   /* ---------------------------------------------------------------------- */
 
+  @Auth([{ module: 'Images', permission: 'canCreate'}])
   @Post()
   @ApiOperation({ summary: 'Subir una imagen de producto' })
   @ApiCreatedResponse({ type: UploadImageResponseDto })
@@ -91,6 +93,7 @@ export class ImagesController {
   /*  GET /files/product/:id – Stream de imagen                             */
   /* ---------------------------------------------------------------------- */
 
+  @Auth([{ module: 'Images', permission: 'canRead'}])
   @Get(':id')
   @ApiOperation({ summary: 'Descargar/visualizar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })
@@ -110,6 +113,7 @@ export class ImagesController {
   }
 
  /** Lista paginada de imágenes (metadatos + URL) */
+@Auth([{ module: 'Images', permission: 'canRead'}]) // Permiso para leer imágenes
 @Get()
 @ApiOperation({ summary: 'Listar imágenes paginadas' })
 @ApiOkResponse({ type: PaginatedImagesDto })
@@ -124,6 +128,7 @@ async findAll(
   /*  DELETE /files/product/:id – Elimina imagen (binario + metadatos)      */
   /* ---------------------------------------------------------------------- */
 
+  @Auth([{ module: 'Images', permission: 'canDelete'}])
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })

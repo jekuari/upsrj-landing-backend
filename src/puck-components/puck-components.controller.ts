@@ -5,6 +5,7 @@ import { UpdatePuckComponentDto } from './dto/update-puck-component.dto';
 import { PuckComponent } from './entities/puck-component.entity';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { Auth } from 'src/auth/decorators';
 
 @ApiTags('Puck Components')
 @ApiBearerAuth('JWT-auth')
@@ -15,6 +16,7 @@ export class PuckComponentsController {
     @ApiOperation({ summary: 'Crear un nuevo componente' })
     @ApiResponse({ status: 201, description: 'Componente creado exitosamente', type: PuckComponent })
     @ApiResponse({ status: 400, description: 'Solicitud inválida' })
+    @Auth([{ module: 'Puck', permission: 'canCreate'}])
     @Post()
     async create(@Body() createPuckComponentDto: CreatePuckComponentDto): Promise<PuckComponent> {
         return this.puckComponentsService.create(createPuckComponentDto);
@@ -23,6 +25,7 @@ export class PuckComponentsController {
     @ApiOperation({ summary: 'Obtener todos los componentes' })
     @ApiResponse({ status: 200, description: 'Lista de todos los componentes', type: [PuckComponent] })
     @ApiResponse({ status: 500, description: 'Error en el servidor' })
+    @Auth([{ module: 'Puck', permission: 'canRead'}])
     @Get()
     async findAll(@Query() paginationDto: PaginationDto): Promise<PuckComponent[]> {
         return this.puckComponentsService.findAll(paginationDto);
@@ -31,6 +34,7 @@ export class PuckComponentsController {
     @ApiOperation({ summary: 'Obtener un componente por su ID' })
     @ApiResponse({ status: 200, description: 'Componente encontrado', type: PuckComponent })
     @ApiResponse({ status: 404, description: 'Componente no encontrado' })
+    @Auth([{ module: 'Puck', permission: 'canRead'}])
     @Get(':id')
     async findOne(@Param('id') id: string): Promise<PuckComponent> {
         return this.puckComponentsService.findOne(id);
@@ -40,6 +44,7 @@ export class PuckComponentsController {
     @ApiResponse({ status: 200, description: 'Componente actualizado', type: PuckComponent })
     @ApiResponse({ status: 400, description: 'Datos de actualización inválidos' })
     @ApiResponse({ status: 404, description: 'Componente no encontrado' })
+    @Auth([{ module: 'Puck', permission: 'canUpdate'}])
     @Patch(':id')
     async update(
         @Param('id') id: string,
@@ -51,6 +56,7 @@ export class PuckComponentsController {
     @ApiOperation({ summary: 'Eliminar un componente por su ID' })
     @ApiResponse({ status: 200, description: 'Componente eliminado exitosamente' })
     @ApiResponse({ status: 404, description: 'Componente no encontrado' })
+    @Auth([{ module: 'Puck', permission: 'canDelete'}])
     @Delete(':id')
     async remove(@Param('id') id: string): Promise<void> {
         return this.puckComponentsService.remove(id);

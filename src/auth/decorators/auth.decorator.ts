@@ -1,13 +1,14 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
-import { Authentication, Images, Permission, Puck } from './../interfaces/valid-permissions';
-import { PermissionProtected } from './permission-protected.decorator';
+import { PermissionProtected, RequiredPermission } from './../decorators/permission-protected.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { UserPermissionGuard } from '../guards/user-permission.guard';
 
-
-export function Auth(permissions: (Authentication| Images| Permission| Puck )[]) {
+// El decorador Auth recibe un array de objetos tipo RequiredPermission
+export function Auth(permissions: RequiredPermission[]) {
   return applyDecorators(
+    // Aplicamos el decorador PermissionProtected que setea los permisos requeridos
     PermissionProtected(permissions),
+    // Aplicamos el guard de autenticación y el guard de permisos
     UseGuards(AuthGuard('jwt'), UserPermissionGuard),
   );
 }

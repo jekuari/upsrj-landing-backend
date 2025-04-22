@@ -7,7 +7,6 @@ import { Auth } from './decorators/auth.decorator';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { Authentication, Permission  } from './interfaces';
 @ApiTags('Auth')
 @Controller('auth')
 @ApiBearerAuth('JWT-auth')
@@ -17,7 +16,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get all users', description: 'Retrieves all users from the database.'})
   @ApiResponse({ status: 200, description: 'Users found successfully'})
   @ApiResponse({ status: 500, description: 'Internal Server Error' })
-  @Auth([Authentication.canRead])
+  @Auth([{ module: 'Authentication', permission: 'canRead'}])
   @Get('getUsers')
   findAll(@Query() paginationDto: PaginationDto) {
     return this.authService.findAll(paginationDto);
@@ -27,6 +26,7 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 400, description: 'Bad Request. Duplicate entry' })
   @ApiResponse({ status: 500, description: 'Internal Server Error' })
+  
   @Post('register')
   // Registro de un nuevo usuario
   async create(@Body() createUserDto: CreateUserDto) {
@@ -52,7 +52,7 @@ export class AuthController {
   @ApiResponse({ status: 403, description: 'Forbidden. Token related issues'})
   @ApiResponse({ status: 404, description: ''})
   @ApiResponse({ status: 500, description: 'Internal server error'})
-  @Auth([Authentication.canUpdate])
+  @Auth([{ module: 'Authentication', permission: 'canUpdate'}])
   @Patch('updateUser/:id')
   updateUser(
     @Param('id') id: string,
@@ -66,16 +66,17 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Request successful. User status toggled successfully'})
   @ApiResponse({ status: 400, description: 'Bad request due to invalid input' })
   @ApiResponse({ status: 404, description: 'User not found'})
+  @Auth([{ module: 'Authentication', permission: 'canUpdate'}])
   @Patch('toggle-active/:id')
-  @Auth([Authentication.canUpdate])
+  //@Auth([Authentication.canUpdate])
   async toggleUserStatus(@Param('id') id: string) {
     return this.authService.toggleUserStatus(id);
   }
 
   //Prueba (Get user 'isActive' status)
   @ApiOperation({ summary: 'Testing endpoint', description: 'Checks the status of a user by their unique ID.'})
+  @Auth([{ module: 'Authentication', permission: 'canRead'}])
   @Get('status/:id')
-  @Auth([Authentication.canRead, Permission.canRead])
   checkStatus(@Param('id') id: string){
     return this.authService.checkUserStatus(id)
   }
@@ -84,8 +85,8 @@ export class AuthController {
   @ApiTags('Pruebas')              //
   @ApiResponse({ status: 200, description: 'Acceso concedido' })
   @ApiUnauthorizedResponse({ description: 'Token inválido o ausente' })
+  //@Auth([{ module: 'Authentication', permission: 'canCreate'}])
   @Get('private')
-  @Auth([Authentication.canRead, Permission.canRead])
   testingPrivateRoute3(
     @GetUser() user: User
   ){
