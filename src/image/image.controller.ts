@@ -144,13 +144,9 @@ async findAll(
   @ApiOperation({ summary: 'Eliminar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })
   @ApiNoContentResponse({ description: 'Imagen eliminada correctamente' })
-  @HttpCode(HttpStatus.NO_CONTENT) // 204 No Content si todo va bien
   async deleteImage(
     @Param('id', ParseObjectIdPipe) id: ObjectId,
-  ): Promise<void> {
-    // Borra archivo y metadatos; lanza excepción si algo falla
-    await this.imagesService.deleteImage(id);
-
-    // No retornamos body → Nest envía 204 automáticamente
+  ): Promise<{ message: string }> {
+    return this.imagesService.deleteImage(id);
   }
 }

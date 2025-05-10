@@ -128,7 +128,7 @@ async findAll(
    * Elimina la imagen (archivo + metadatos).
    * @returns { id: string, deleted: boolean }
    */
-  async deleteImage(gridId: ObjectId): Promise<{ id: string; deleted: boolean; message: string }> {
+  async deleteImage(gridId: ObjectId): Promise<{ message: string }> {
     // 1️⃣  Verifica que exista el metadato (sin abrir streams)
     const meta = await this.imageRepository.findOneBy({ gridFsId: gridId });
     if (!meta) {
@@ -149,8 +149,8 @@ async findAll(
     this.logger.verbose(`Metadatos Image ${gridId} eliminados`);
 
     return { 
-      id: gridId.toString(), 
-      deleted: true,
+      // id: gridId.toString(), 
+      // deleted: true,
       message: 'Imagen eliminada correctamente',
     };
   }
