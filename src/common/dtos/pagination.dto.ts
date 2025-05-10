@@ -1,5 +1,6 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsOptional, IsPositive, Min } from 'class-validator';
+import { IsBooleanString, IsOptional, IsPositive, Min } from 'class-validator';
 
 
 export class PaginationDto {
@@ -13,5 +14,11 @@ export class PaginationDto {
     @Min(0)
     @Type( () => Number ) // enableImplicitConversions: true
     offset?: number;
+
+    
+    @IsOptional()
+    @IsBooleanString() // ✅ Esto valida que sea 'true' o 'false'
+    @ApiPropertyOptional({ example: 'true', description: 'Incluir metadatos de paginación' })
+    withMetadata?: string;
 
 }

@@ -25,6 +25,10 @@ export class AuthService {
   async createSeed(createUserDto: CreateUserDto) {
     const { password, ...userData } = createUserDto;
   
+    if (!password) {
+      throw new Error('Password is missing in createSeed()');
+    }
+    
     /* 1. Hash de la contraseña */
     const hashedPassword = await bcrypt.hash(password, 10);
   

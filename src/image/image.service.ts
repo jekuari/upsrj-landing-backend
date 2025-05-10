@@ -14,6 +14,7 @@ import * as sharp from 'sharp';
 
 import { Image } from './entities/image.entity';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginatedImagesDto, ImageMetaDto } from 'src/common/dtos/paginated-images.response';
 
 /**
  * Lógica de negocio para subir y descargar imágenes mediante GridFS.
@@ -38,8 +39,9 @@ export class ImagesService {
 
     // 1️⃣  Procesado opcional (resize / conversión):
     const processedBuffer = await sharp(file.buffer)
-      .resize({ width: 800 })          // ajusta a tu gusto
-      .toBuffer();
+  .resize({ height: 1080 }) // mantiene el aspecto original
+  .webp() // convierte a formato webp
+  .toBuffer();
 
     const contentType = file.mimetype; // mantenemos MIME original
 
@@ -87,31 +89,19 @@ export class ImagesService {
  */
 async findAll(
   paginationDto?: PaginationDto,
-): Promise<{
-  total: number;
-  limit: number;
-  offset: number;
-  data: {
-    id: string;
-    filename: string;
-    contentType: string;
-    createdAt: Date;
-    url: string;
-  }[];
-}> {
-  // Valores por defecto + validación básica 1‑100
+  withMetadata: boolean = false, // decide si devolver metadatos o no
+): Promise<PaginatedImagesDto | ImageMetaDto[]> {
+
   const { limit = 10, offset = 0 } = paginationDto || {};
   const safeLimit  = Math.min(Math.max(limit, 1), 100);
   const safeOffset = Math.max(offset, 0);
 
-  // Recupera la página y el total de registros
   const [images, total] = await this.imageRepository.findAndCount({
     take: safeLimit,
     skip: safeOffset,
     order: { createdAt: 'DESC' },
   });
 
-  // Mapea a DTO ligero con la URL del endpoint GET
   const data = images.map(img => ({
     id:         img.gridFsId.toString(),
     filename:   img.filename,
@@ -120,15 +110,25 @@ async findAll(
     url:        `/api/files/product/${img.gridFsId}`,
   }));
 
-  return { total, limit: safeLimit, offset: safeOffset, data };
+  if (withMetadata) {
+    return {
+      total,
+      limit: safeLimit,
+      offset: safeOffset,
+      data,
+    };
+  }
+
+  return data;
 }
+
 
 
   /**
    * Elimina la imagen (archivo + metadatos).
    * @returns { id: string, deleted: boolean }
    */
-  async deleteImage(gridId: ObjectId): Promise<{ id: string; deleted: boolean }> {
+  async deleteImage(gridId: ObjectId): Promise<{ id: string; deleted: boolean; message: string }> {
     // 1️⃣  Verifica que exista el metadato (sin abrir streams)
     const meta = await this.imageRepository.findOneBy({ gridFsId: gridId });
     if (!meta) {
@@ -148,6 +148,10 @@ async findAll(
     await this.imageRepository.delete({ gridFsId: gridId });
     this.logger.verbose(`Metadatos Image ${gridId} eliminados`);
 
-    return { id: gridId.toString(), deleted: true };
+    return { 
+      id: gridId.toString(), 
+      deleted: true,
+      message: 'Imagen eliminada correctamente',
+    };
   }
 }

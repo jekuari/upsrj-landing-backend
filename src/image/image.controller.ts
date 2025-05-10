@@ -33,6 +33,7 @@ import {
   ApiTags,
   ApiQuery,
   ApiBearerAuth,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
@@ -44,7 +45,7 @@ import { ImagesService } from './image.service';
 import { fileFilter } from './helpers/fileFilter.helper';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Image } from './entities/image.entity';
-import { PaginatedImagesDto } from 'src/common/dtos/paginated-images.response';
+import { ImageMetaDto, PaginatedImagesDto } from 'src/common/dtos/paginated-images.response';
 import { Auth } from 'src/auth/decorators';
 
 @ApiTags('Images')                    // Grupo Swagger
@@ -85,7 +86,7 @@ export class ImagesController {
     // Construimos la respuesta estándar
     return {
       id: image.gridFsId.toString(),
-      url: `/api/files/product/${image.gridFsId}`,
+      //url: `/api/files/product/${image.gridFsId}`,
     };
   }
 
@@ -115,15 +116,25 @@ export class ImagesController {
  /** Lista paginada de imágenes (metadatos + URL) */
 @Auth([{ module: 'Images', permission: 'canRead'}]) // Permiso para leer imágenes
 @Get()
-@ApiOperation({ summary: 'Listar imágenes paginadas' })
-@ApiOkResponse({ type: PaginatedImagesDto })
-@ApiQuery({ name: 'limit',  required: false, type: Number, example: 10 })
-@ApiQuery({ name: 'offset', required: false, type: Number, example: 0  })
+@ApiOperation({ summary: 'Listar imágenes (paginadas o sin metadata)' })
+@ApiOkResponse({ description: 'Array plano o paginado', schema: {
+  oneOf: [
+    { type: 'array', items: { $ref: getSchemaPath(ImageMetaDto) } },
+    { $ref: getSchemaPath(PaginatedImagesDto) },
+  ],
+}})
+@ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+@ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
+@ApiQuery({ name: 'withMetadata', required: false, type: Boolean, example: true })
 async findAll(
   @Query() paginationDto: PaginationDto,
-): Promise<PaginatedImagesDto> {
-  return this.imagesService.findAll(paginationDto);
+  @Query('withMetadata') withMetadata: string,
+): Promise<PaginatedImagesDto | ImageMetaDto[]> {
+  const includeMetadata = withMetadata === 'true';
+  return this.imagesService.findAll(paginationDto, includeMetadata);
 }
+
+
   /* ---------------------------------------------------------------------- */
   /*  DELETE /files/product/:id – Elimina imagen (binario + metadatos)      */
   /* ---------------------------------------------------------------------- */

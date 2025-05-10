@@ -1,7 +1,7 @@
 // src/images/dto/paginated-images.response.ts
 import { ApiProperty } from '@nestjs/swagger';
 
-class ImageMetaDto {
+export class ImageMetaDto {
   @ApiProperty() id: string;
   @ApiProperty() filename: string;
   @ApiProperty() contentType: string;
