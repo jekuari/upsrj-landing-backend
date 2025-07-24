@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository } from 'typeorm';
 import { PuckComponent } from './entities/puck-component.entity';
@@ -20,11 +24,13 @@ export class PuckComponentsService {
    * @returns The newly created component
    */
   async create(dto: CreatePuckComponentDto) {
-    const slug = this.slugify(dto.slug || dto.root?.props?.title || 'sin-titulo');
-  
+    const slug = this.slugify(dto.slug || dto.root?.props?.title || '');
+
     const exists = await this.puckRepository.findOneBy({ slug });
-    if (exists) throw new BadRequestException(`Ya existe un componente con el slug: "${slug}"`);
-  
+    if (exists) {
+      return this.update(exists.slug, dto);
+    }
+
     return this.puckRepository.save({ ...dto, slug });
   }
 
@@ -33,12 +39,12 @@ export class PuckComponentsService {
    * @param paginationDto Optional pagination parameters (limit, offset)
    * @returns Array of Puck components based on pagination settings
    */
-  async findAll(paginationDto?: PaginationDto){
+  async findAll(paginationDto?: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto || {};
 
     return await this.puckRepository.find({
       take: limit,
-      skip: offset
+      skip: offset,
     });
   }
 
@@ -47,22 +53,23 @@ export class PuckComponentsService {
    * @param id The unique identifier of the component
    * @returns The found component or throws NotFoundException
    */
-  async findOne(id: string){
-    const component = await this.puckRepository.findOneBy({ id: new ObjectId(id) });
+  async findOne(slug: string) {
+    const component = await this.puckRepository.findOneBy({ slug: slug });
+    console.log('component found:', component, slug);
     if (!component) {
-      throw new NotFoundException(`Component with id "${id}" not found`);
+      throw new NotFoundException(`Component with id "${slug}" not found`);
     }
     return component;
   }
 
   /**
    * Updates an existing Puck component
-   * @param id The unique identifier of the component to update
+   * @param slug The unique identifier of the component to update
    * @param dto The data transfer object with updated fields
    * @returns The updated component
    */
-  async update(id: string, dto: UpdatePuckComponentDto){
-    const existing = await this.findOne(id); // lanza error si no existe
+  async update(slug: string, dto: UpdatePuckComponentDto) {
+    const existing = await this.findOne(slug); // lanza error si no existe
     const updated = Object.assign(existing, dto);
     return await this.puckRepository.save(updated);
   }
@@ -73,7 +80,7 @@ export class PuckComponentsService {
    */
   async remove(id: string) {
     const component = await this.findOne(id); // lanza error si no existe
-        await this.puckRepository.remove(component);
+    await this.puckRepository.remove(component);
   }
 
   private slugify(text: string): string {
@@ -82,8 +89,8 @@ export class PuckComponentsService {
       .trim()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '') // quita acentos
-      .replace(/[^\w\s-]/g, '')        // quita símbolos
-      .replace(/\s+/g, '-')            // reemplaza espacios por guiones
-      .replace(/--+/g, '-');           // evita múltiples guiones seguidos
+      .replace(/[^\w\s-]/g, '') // quita símbolos
+      .replace(/\s+/g, '-') // reemplaza espacios por guiones
+      .replace(/--+/g, '-'); // evita múltiples guiones seguidos
   }
 }

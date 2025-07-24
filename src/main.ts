@@ -7,7 +7,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
+
   app.useBodyParser('json', { limit: '5mb' });
   app.useBodyParser('urlencoded', { limit: '5mb', extended: true });
 
@@ -19,7 +19,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    })
+    }),
   );
 
   const config = new DocumentBuilder()
@@ -33,7 +33,7 @@ async function bootstrap() {
         bearerFormat: 'JWT',
         description: 'Introduce tu token JWT en formato: Bearer <token>',
       },
-      'JWT-auth'
+      'JWT-auth',
     )
     .build();
 
@@ -45,6 +45,9 @@ async function bootstrap() {
     res.json(document);
   });
 
+  app.enableCors({
+    origin: ['http://localhost:3000', 'https://sistema.sicapre.com'],
+  });
   await app.listen(process.env.PORT ?? 3000);
 
   logger.log(`Application is running on: ${await app.getUrl()}`);
