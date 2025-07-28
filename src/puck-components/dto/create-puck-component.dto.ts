@@ -6,6 +6,7 @@ import { Type } from 'class-transformer';
  * Contains type, props, and optional readOnly settings
  */
 class PuckContent {
+    
     @IsString()
     type: string;
 
@@ -67,7 +68,6 @@ class PuckZoneItem {
  * Validates the structure of the component data before processing
  */
 export class CreatePuckComponentDto {
-
     @IsOptional()   
     @IsString()
     slug?: string;
@@ -84,4 +84,8 @@ export class CreatePuckComponentDto {
     @IsDefined()
     @IsObject()
     zones: Record<string, PuckZoneItem[]>;
+
+    // Permitir que llegue _id pero ignorarlo en la lógica
+    @IsOptional()
+    _id?: string;
 }

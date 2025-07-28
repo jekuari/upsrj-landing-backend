@@ -26,12 +26,15 @@ export class PuckComponentsService {
   async create(dto: CreatePuckComponentDto) {
     const slug = this.slugify(dto.slug || dto.root?.props?.title || '');
 
+    // Eliminar _id si viene en el DTO para evitar conflictos
+    const { _id, ...restDto } = dto as any;
+
     const exists = await this.puckRepository.findOneBy({ slug });
     if (exists) {
-      return this.update(exists.slug, dto);
+      return this.update(exists.slug, restDto);
     }
 
-    return this.puckRepository.save({ ...dto, slug });
+    return this.puckRepository.save({ ...restDto, slug });
   }
 
   /**
