@@ -50,7 +50,10 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
-  });
+    // Añade esto para evitar que Access-Control-Allow-Credentials sea *
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+});
   await app.listen(process.env.PORT ?? 3000);
 
   logger.log(`Application is running on: ${await app.getUrl()}`);
