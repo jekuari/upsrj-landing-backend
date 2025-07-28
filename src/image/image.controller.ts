@@ -85,7 +85,7 @@ export class ImagesController {
 
     // Construimos la respuesta estándar
     return {
-      id: image.gridFsId.toString(),
+      _id: image.gridFsId.toString(),
       //url: `/api/files/product/${image.gridFsId}`,
     };
   }

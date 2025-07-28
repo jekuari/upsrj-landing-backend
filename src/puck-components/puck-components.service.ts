@@ -76,10 +76,10 @@ export class PuckComponentsService {
 
   /**
    * Removes a Puck component from the database
-   * @param id The unique identifier of the component to delete
+   * @param slug The unique identifier of the component to delete
    */
-  async remove(id: string) {
-    const component = await this.findOne(id); // lanza error si no existe
+  async remove(slug: string) {
+    const component = await this.findOne(slug); // lanza error si no existe
     await this.puckRepository.remove(component);
   }
 

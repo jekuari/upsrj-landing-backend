@@ -80,23 +80,25 @@ export class PuckComponentsController {
   @ApiResponse({ status: 400, description: 'Datos de actualización inválidos' })
   @ApiResponse({ status: 404, description: 'Componente no encontrado' })
   @Auth([{ module: 'Puck', permission: 'canUpdate' }])
-  @Patch(':id')
+  @Patch(':slug')
   async update(
-    @Param('id') id: string,
+    @Param('slug') slug: string,
     @Body() updatePuckComponentDto: UpdatePuckComponentDto,
   ): Promise<PuckComponent> {
-    return this.puckComponentsService.update(id, updatePuckComponentDto);
+    const slugString = decodeURIComponent(slug);
+    return this.puckComponentsService.update(slugString, updatePuckComponentDto);
   }
 
-  @ApiOperation({ summary: 'Eliminar un componente por su ID' })
+  @ApiOperation({ summary: 'Eliminar un componente por su slug' })
   @ApiResponse({
     status: 200,
     description: 'Componente eliminado exitosamente',
   })
   @ApiResponse({ status: 404, description: 'Componente no encontrado' })
   @Auth([{ module: 'Puck', permission: 'canDelete' }])
-  @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.puckComponentsService.remove(id);
+  @Delete(':slug')
+  async remove(@Param('slug') slug: string): Promise<void> {
+    const slugString = decodeURIComponent(slug);
+    return this.puckComponentsService.remove(slugString);
   }
 }
