@@ -4,6 +4,6 @@ import { IsOptional } from 'class-validator';
 
 export class UploadImageResponseDto {
   @ApiProperty({ example: '661fd9b8217f4f9292c2c5cd' })
-  id: string;
+  _id: string;
 
 }

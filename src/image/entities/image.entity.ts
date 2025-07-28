@@ -11,7 +11,7 @@ import { ObjectId } from 'mongodb';
 export class Image {
   /** ID propio del documento de metadatos. */
   @ObjectIdColumn()
-  id: ObjectId;
+  _id: ObjectId;
 
   /** Nombre original (o UUID) del archivo subido. */
   @Column()

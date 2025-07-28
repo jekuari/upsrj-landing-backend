@@ -11,7 +11,7 @@ export class PuckComponent {
      * Unique identifier for the component
      */
     @ObjectIdColumn()
-    id: ObjectId;
+    _id: ObjectId;
 
     /**
      * Name of the component
