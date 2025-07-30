@@ -183,3 +183,160 @@ pnpm approve-builds sharp
    - Access a specific image: `http://localhost:3000/api/images/{uuid}`
    - List all images: `http://localhost:3000/api/images`
 
+## Api Module Documentation
+
+### Images Module
+
+Handles image storage (GridFS) with processing (Sharp).
+Base Route: /api/files/images
+
+#### Entity
+```typescript
+class Image {
+  id: string;           // UUID
+  filename: string;     // Original name (e.g., "banner.png")
+  gridFsId: ObjectId;   // MongoDB GridFS reference
+  contentType: string;  // MIME type (e.g., "image/webp")
+  createdAt: Date;
+}
+```
+#### Endpoints
+
+| Method | Endpoint            | Description                                                                 |
+|--------|---------------------|-----------------------------------------------------------------------------|
+| POST   | /api/images         | Upload an image (auto-converts to WebP, resizes to max 1080px height).     |
+| GET    | /api/images/{id}    | Stream an image by ID (directly usable in `<img>` tags).                   |
+| GET    | /api/images/list    | List all images (paginated, with URLs).                                    |
+| DELETE | /api/images/{id}    | Delete an image and its metadata.                                          |
+
+#### Examples 
+
+Upload (front)
+
+```typescript
+const formData = new FormData();
+formData.append('file', fileInput.files[0]);
+
+const response = await fetch('/api/images', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer YOUR_TOKEN' },
+  body: formData
+});
+// Response: { "id": "abc123", "url": "/api/images/abc123" }
+```
+
+Display in HTML
+
+```typescript
+<img src="http://localhost:3000/api/images/abc123" alt="Uploaded Image" />
+```
+
+### Files Module
+
+Manages PDF file storage (GridFS). 
+Base Route: /api/files/pdf
+
+#### Entity
+
+```typescript
+class Files {
+  id: string;           // UUID
+  filename: string;     // Original name (e.g., "report.pdf")
+  gridFsId: ObjectId;   // GridFS reference
+  contentType: string;  // Always "application/pdf"
+  createdAt: Date;
+}
+```
+
+#### Endpoints
+
+```typescript
+| Method | Endpoint           | Description                            |
+|--------|--------------------|----------------------------------------|
+| POST   | /api/files         | Upload a PDF (validates MIME type).    |
+| GET    | /api/files/{id}    | Stream a PDF by ID.                    |
+| GET    | /api/files/list    | List PDFs (paginated, with metadata).  |
+| DELETE | /api/files/{id}    | Delete a PDF and its metadata.         |
+```
+
+#### Examples
+
+Download PDF (front)
+
+```typescript
+// Fetch PDF as a blob
+const response = await fetch('/api/files/abc123', {
+  headers: { 'Authorization': 'Bearer YOUR_TOKEN' }
+});
+const blob = await response.blob();
+
+// Open in new tab
+const url = URL.createObjectURL(blob);
+window.open(url);
+```
+### Puck Components Module
+
+Stores reusable UI components (JSON configurations).
+Base Route: /api/puck-components
+
+####Entity
+
+```typescript
+class PuckComponent {
+  id?: ObjectId;      // Auto-generated
+  slug: string;       // URL-safe ID (e.g., "hero-banner")
+  root: {             // Puck-compatible JSON
+    type: string;
+    props: Record<string, any>;
+  };
+  createdAt: Date;
+}
+```
+
+#### Endpoints
+
+| Method | Endpoint                          | Description                                 |
+|--------|-----------------------------------|---------------------------------------------|
+| POST   | /api/puck-components              | Create/update a component (auto-slugifies names). |
+| GET    | /api/puck-components/{slug}       | Fetch a component by slug.                  |
+| GET    | /api/puck-components/list         | List all components (paginated).            |
+| DELETE | /api/puck-components/{slug}       | Delete a component.                         |
+
+#### Examples
+
+Save a component 
+
+```typescript
+const response = await fetch('/api/puck-components', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    slug: 'hero-banner', // Optional (auto-generated if omitted)
+    root: {
+      type: 'HeroBanner',
+      props: { title: 'Welcome', color: 'blue' }
+    }
+  })
+});
+// Response: { "slug": "hero-banner", ... }
+```
+
+---
+
+## Key Notes for Frontend Devs
+
+1. Authentication: All endpoints require:
+
+```http
+Authorization: Bearer YOUR_TOKEN
+```
+
+2. Error Handling: Check for:
+
+- 400 Bad Request (invalid file/MIME type).
+- 404 Not Found (invalid ID/slug).
+
+3. Pagination: Use ?limit=10&offset=0 in list endpoints.
