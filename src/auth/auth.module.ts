@@ -13,28 +13,40 @@ import { UserPermissionGuard } from './guards/user-permission.guard';
 
 @Module({
   controllers: [AuthController],
-  imports:[
+  imports: [
     forwardRef(() => AccessRightsModule),
     ConfigModule,
     TypeOrmModule.forFeature([User]),
-    PassportModule.register({defaultStrategy: 'jwt'}),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
 
     JwtModule.registerAsync({
-      imports:[ConfigModule],
-      inject:[ConfigService],
-      useFactory:(configService:ConfigService) => {
-        console.log(`Secret Jwt: ${configService.get('JWT_SECRET')}`)
-        console.log(`Secret Jwt: ${process.env.JWT_SECRET}`)
-        return{
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        console.log(`Secret Jwt: ${configService.get('JWT_SECRET')}`);
+        console.log(`Secret Jwt: ${process.env.JWT_SECRET}`);
+        return {
           secret: configService.get('JWT_SECRET'),
-          signOptions:{
-            expiresIn:'2h'
-          }
-        }
-      }
-    })
+          signOptions: {
+            expiresIn: '24h',
+          },
+        };
+      },
+    }),
   ],
-  providers: [AuthService , JwtStrategy, AccessRightsService, UserPermissionGuard],
-  exports:[TypeOrmModule , AuthService, JwtStrategy, PassportModule, JwtModule, UserPermissionGuard]
+  providers: [
+    AuthService,
+    JwtStrategy,
+    AccessRightsService,
+    UserPermissionGuard,
+  ],
+  exports: [
+    TypeOrmModule,
+    AuthService,
+    JwtStrategy,
+    PassportModule,
+    JwtModule,
+    UserPermissionGuard,
+  ],
 })
 export class AuthModule {}

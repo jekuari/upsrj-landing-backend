@@ -45,12 +45,15 @@ import { ImagesService } from './image.service';
 import { fileFilter } from './helpers/fileFilter.helper';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Image } from './entities/image.entity';
-import { ImageMetaDto, PaginatedImagesDto } from 'src/common/dtos/paginated-images.response';
+import {
+  ImageMetaDto,
+  PaginatedImagesDto,
+} from 'src/common/dtos/paginated-images.response';
 import { Auth } from 'src/auth/decorators';
 
-@ApiTags('Images')                    // Grupo Swagger
+@ApiTags('Images') // Grupo Swagger
 @Controller('files/images')
-@ApiBearerAuth('JWT-auth')          // Prefijo de ruta
+@ApiBearerAuth('JWT-auth') // Prefijo de ruta
 export class ImagesController {
   constructor(private readonly imagesService: ImagesService) {}
 
@@ -58,7 +61,7 @@ export class ImagesController {
   /*  POST /files/product – Carga de imagen                                 */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canCreate'}])
+  @Auth([{ module: 'Images', permission: 'canCreate' }])
   @Post()
   @ApiOperation({ summary: 'Subir una imagen de producto' })
   @ApiCreatedResponse({ type: UploadImageResponseDto })
@@ -67,7 +70,7 @@ export class ImagesController {
     FileInterceptor('file', {
       // Guarda el archivo en memoria; luego lo enviamos a GridFS
       storage: multer.memoryStorage(),
-      fileFilter,                      // Valida tipo MIME/extensión
+      fileFilter, // Valida tipo MIME/extensión
       limits: { fileSize: 10_000_000 }, // 10 MB máximo
     }),
   )
@@ -82,7 +85,6 @@ export class ImagesController {
     // Delegamos el guardado al servicio
     const image = await this.imagesService.upload(file);
 
-
     // Construimos la respuesta estándar
     return {
       _id: image.gridFsId.toString(),
@@ -94,7 +96,6 @@ export class ImagesController {
   /*  GET /files/product/:id – Stream de imagen                             */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canRead'}])
   @Get(':id')
   @ApiOperation({ summary: 'Descargar/visualizar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })
@@ -113,33 +114,40 @@ export class ImagesController {
     return stream.pipe(res);
   }
 
- /** Lista paginada de imágenes (metadatos + URL) */
-@Auth([{ module: 'Images', permission: 'canRead'}]) // Permiso para leer imágenes
-@Get()
-@ApiOperation({ summary: 'Listar imágenes (paginadas o sin metadata)' })
-@ApiOkResponse({ description: 'Array plano o paginado', schema: {
-  oneOf: [
-    { type: 'array', items: { $ref: getSchemaPath(ImageMetaDto) } },
-    { $ref: getSchemaPath(PaginatedImagesDto) },
-  ],
-}})
-@ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-@ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
-@ApiQuery({ name: 'withMetadata', required: false, type: Boolean, example: true })
-async findAll(
-  @Query() paginationDto: PaginationDto,
-  @Query('withMetadata') withMetadata: string,
-): Promise<PaginatedImagesDto | ImageMetaDto[]> {
-  const includeMetadata = withMetadata === 'true';
-  return this.imagesService.findAll(paginationDto, includeMetadata);
-}
-
+  /** Lista paginada de imágenes (metadatos + URL) */
+  @Auth([{ module: 'Images', permission: 'canRead' }]) // Permiso para leer imágenes
+  @Get()
+  @ApiOperation({ summary: 'Listar imágenes (paginadas o sin metadata)' })
+  @ApiOkResponse({
+    description: 'Array plano o paginado',
+    schema: {
+      oneOf: [
+        { type: 'array', items: { $ref: getSchemaPath(ImageMetaDto) } },
+        { $ref: getSchemaPath(PaginatedImagesDto) },
+      ],
+    },
+  })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiQuery({ name: 'offset', required: false, type: Number, example: 0 })
+  @ApiQuery({
+    name: 'withMetadata',
+    required: false,
+    type: Boolean,
+    example: true,
+  })
+  async findAll(
+    @Query() paginationDto: PaginationDto,
+    @Query('withMetadata') withMetadata: string,
+  ): Promise<PaginatedImagesDto | ImageMetaDto[]> {
+    const includeMetadata = withMetadata === 'true';
+    return this.imagesService.findAll(paginationDto, includeMetadata);
+  }
 
   /* ---------------------------------------------------------------------- */
   /*  DELETE /files/product/:id – Elimina imagen (binario + metadatos)      */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canDelete'}])
+  @Auth([{ module: 'Images', permission: 'canDelete' }])
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })
