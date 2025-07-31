@@ -24,17 +24,17 @@ export class PuckComponentsService {
    * @returns The newly created component
    */
   async create(dto: CreatePuckComponentDto) {
-    const slug = this.slugify(dto.slug || dto.root?.props?.title || '');
+    // const slug = this.slugify(dto.slug || dto.root?.props?.title || '');
 
     // Eliminar _id si viene en el DTO para evitar conflictos
     const { _id, ...restDto } = dto as any;
 
-    const exists = await this.puckRepository.findOneBy({ slug });
+    const exists = await this.puckRepository.findOneBy({ slug: dto.slug });
     if (exists) {
       return this.update(exists.slug, restDto);
     }
 
-    return this.puckRepository.save({ ...restDto, slug });
+    return this.puckRepository.save({ ...restDto, slug: dto.slug });
   }
 
   /**
