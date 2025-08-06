@@ -8,6 +8,7 @@ import { SeedService } from './seed/seed.service';
 import { PuckComponentsModule } from './puck-components/puck-components.module';
 import { ImageModule } from './image/image.module';
 import { FilesModule } from './files-module/files-module.module';
+import { VideosModule } from './videos/videos.module';
 
 @Module({
   providers: [SeedService],
@@ -30,6 +31,7 @@ import { FilesModule } from './files-module/files-module.module';
     PuckComponentsModule,
     ImageModule,
     FilesModule,
+    VideosModule,
   ]
 })
 export class AppModule implements OnModuleInit {

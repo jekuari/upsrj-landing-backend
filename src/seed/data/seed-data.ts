@@ -1,7 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { SystemModule } from 'src/access-rights/entities/system-module.entity';
 import { CreateUserDto } from 'src/auth/dto';
-import { User } from 'src/auth/entities/user.entity';
 import { config } from 'dotenv';
 config(); // carga variables desde .env si no se han cargado
 
@@ -11,6 +10,8 @@ export const initialData: Partial<SystemModule>[] = [
     {  moduleName: 'Permission', isActive: true },
     {  moduleName: 'Images', isActive: true },
     {  moduleName: 'Puck', isActive: true },
+    {  moduleName: 'Videos', isActive: true },
+    {  moduleName: 'Files', isActive: true },
 ];
 
 export const initialUsers:CreateUserDto[] = [
