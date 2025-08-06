@@ -14,7 +14,16 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { ApiTags, ApiOperation, ApiConsumes, ApiParam, ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiNoContentResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiConsumes,
+  ApiParam,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiNoContentResponse,
+} from '@nestjs/swagger';
 import { VideosService } from './videos.service';
 import { ParseObjectIdPipe } from '../common/pipes/parse-object-id.pipe';
 import { videoFileFilter } from './helpers/videoFileFilter.helper';
@@ -22,7 +31,7 @@ import { UploadVideoResponseDto } from './dto/upload-video.response';
 import { Auth } from 'src/auth/decorators';
 
 @ApiTags('Videos')
-@Controller('files/videos')
+@Controller('videos')
 @ApiBearerAuth('JWT-auth')
 export class VideosController {
   constructor(private readonly videosService: VideosService) {}
@@ -53,13 +62,18 @@ export class VideosController {
   @Get('stream/:id')
   @ApiOperation({ summary: 'Reproducir/descargar un video por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId del video en GridFS' })
-  @ApiOkResponse({ description: 'Devuelve el stream del video (parcial o completo).' })
+  @ApiOkResponse({
+    description: 'Devuelve el stream del video (parcial o completo).',
+  })
   async streamVideo(
     @Param('id', ParseObjectIdPipe) id: ObjectId,
     @Headers('range') range: string, // <-- Capturamos el encabezado 'Range'
     @Res() res: Response,
   ) {
-    const { headers, stream, statusCode } = await this.videosService.stream(id, range);
+    const { headers, stream, statusCode } = await this.videosService.stream(
+      id,
+      range,
+    );
 
     // Establecemos el código de estado (200 o 206) y los encabezados
     res.status(statusCode);
@@ -68,13 +82,16 @@ export class VideosController {
     // Enviamos el stream al cliente
     stream.pipe(res);
   }
-  
+
   @Auth([{ module: 'Videos', permission: 'canDelete' }])
   @Delete(':id')
   @HttpCode(200)
   @ApiOperation({ summary: 'Eliminar un video por ID' })
   @ApiNoContentResponse({ description: 'Video eliminado correctamente' })
-  async deleteVideo(@Param('id', ParseObjectIdPipe) id: ObjectId): Promise<{ message: string }> {
+  async deleteVideo(
+    @Param('id', ParseObjectIdPipe) id: ObjectId,
+  ): Promise<{ message: string }> {
     return this.videosService.deleteVideo(id);
   }
 }
+
