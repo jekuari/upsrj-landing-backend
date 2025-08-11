@@ -13,8 +13,7 @@ export const initialData: Partial<SystemModule>[] = [
     {  moduleName: 'Videos', isActive: true },
     {  moduleName: 'Files', isActive: true },
     { moduleName: 'Blog', isActive: true },
-    { moduleName: 'templates', isActive: true },
-    { moduleName: 'AccessRights', isActive: true },
+    { moduleName: 'templates', isActive: true }
 ];
 
 
