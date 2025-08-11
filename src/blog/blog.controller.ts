@@ -47,6 +47,7 @@ export class BlogController {
     type: [BlogComponent],
   })
   @ApiResponse({ status: 500, description: 'Error en el servidor' })
+  @Auth([{ module: 'Blog', permission: 'canRead' }])
   @Get()
   async findAll(
     @Query() paginationDto: PaginationDto,
@@ -61,6 +62,7 @@ export class BlogController {
     type: BlogComponent,
   })
   @ApiResponse({ status: 404, description: 'Blog no encontrado' })
+  @Auth([{ module: 'Blog', permission: 'canRead' }])
   @Get(':slug')
   async findOne(@Param('slug') slug: string): Promise<BlogComponent> {
     const slugString = decodeURIComponent(slug);

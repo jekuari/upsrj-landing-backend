@@ -10,6 +10,7 @@ import { ImageModule } from './image/image.module';
 import { FilesModule } from './files-module/files-module.module';
 import { VideosModule } from './videos/videos.module';
 import { BlogModule } from './blog/blog.module';
+import { TemplatesModuleModule } from './templates-module/templates-module.module';
 
 @Module({
   providers: [SeedService],
@@ -34,6 +35,7 @@ import { BlogModule } from './blog/blog.module';
     FilesModule,
     VideosModule,
     BlogModule,
+    TemplatesModuleModule,
   ]
 })
 export class AppModule implements OnModuleInit {
