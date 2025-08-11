@@ -9,6 +9,7 @@ import { PuckComponentsModule } from './puck-components/puck-components.module';
 import { ImageModule } from './image/image.module';
 import { FilesModule } from './files-module/files-module.module';
 import { VideosModule } from './videos/videos.module';
+import { BlogModule } from './blog/blog.module';
 
 @Module({
   providers: [SeedService],
@@ -19,7 +20,7 @@ import { VideosModule } from './videos/videos.module';
 
     TypeOrmModule.forRoot({
       type: 'mongodb',
-      url: process.env.DATABASE_URL || `mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.1`,
+      url: process.env.DATABASE_URL,
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
@@ -32,6 +33,7 @@ import { VideosModule } from './videos/videos.module';
     ImageModule,
     FilesModule,
     VideosModule,
+    BlogModule,
   ]
 })
 export class AppModule implements OnModuleInit {

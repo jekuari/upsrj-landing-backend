@@ -12,7 +12,12 @@ export const initialData: Partial<SystemModule>[] = [
     {  moduleName: 'Puck', isActive: true },
     {  moduleName: 'Videos', isActive: true },
     {  moduleName: 'Files', isActive: true },
+    { moduleName: 'Blog', isActive: true },
+    { moduleName: 'templates', isActive: true },
+    { moduleName: 'AccessRights', isActive: true },
 ];
+
+
 
 export const initialUsers:CreateUserDto[] = [
     {
