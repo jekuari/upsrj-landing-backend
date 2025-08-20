@@ -49,7 +49,6 @@ export class PuckComponentsController {
     type: [PuckComponent],
   })
   @ApiResponse({ status: 500, description: 'Error en el servidor' })
-  @Auth([{ module: 'Puck', permission: 'canRead' }])
   @Get()
   async findAll(
     @Query() paginationDto: PaginationDto,
@@ -65,7 +64,6 @@ export class PuckComponentsController {
   })
   @ApiResponse({ status: 404, description: 'Componente no encontrado' })
   @Get(':slug')
-  @Auth([{ module: 'Puck', permission: 'canRead' }])
   async findOne(@Param('slug') slug: string): Promise<PuckComponent> {
     // convert from url string to regular string
     console.log('received request for slug:', slug);

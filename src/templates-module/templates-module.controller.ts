@@ -49,7 +49,6 @@ export class TemplatesModuleController {
     type: [TemplatesComponent],
   })
   @ApiResponse({ status: 500, description: 'Error en el servidor' })
-  @Auth([{ module: 'Templates', permission: 'canRead' }])
   @Get()
   async findAll(
     @Query() paginationDto: PaginationDto,
@@ -64,7 +63,6 @@ export class TemplatesModuleController {
     type: TemplatesComponent,
   })
   @ApiResponse({ status: 404, description: 'Template no encontrado' })
-  @Auth([{ module: 'Templates', permission: 'canRead' }])
   @Get(':slug')
   async findOne(@Param('slug') slug: string): Promise<TemplatesComponent> {
     const slugString = decodeURIComponent(slug);

@@ -66,7 +66,6 @@ export class VideosController {
   }
 
   @Get('stream/:id')
-  @Auth([{ module: 'Images', permission: 'canDelete' }])
   @ApiOperation({ summary: 'Play/download a video by ID' })
   @ApiParam({ name: 'id', description: 'ObjectId of the video in GridFS' })
   @ApiOkResponse({
@@ -102,7 +101,6 @@ export class VideosController {
   }
 
   @Get('stream')
-  @Auth([{ module: 'Images', permission: 'canRead' }])
   @ApiOperation({ summary: 'Get paginated videos' })
   @ApiOkResponse({ description: 'Returns a paginated list of videos.' })
   async getPaginatedVideos(
