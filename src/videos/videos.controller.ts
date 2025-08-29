@@ -37,7 +37,7 @@ import { UploadFileDto } from 'src/files-module/dto/update-files-module.dto';
 @Controller('videos')
 @ApiBearerAuth('JWT-auth')
 export class VideosController {
-  constructor(private readonly videosService: VideosService) {}
+  constructor(private readonly videosService: VideosService) { }
 
   @Auth([{ module: 'Images', permission: 'canCreate' }])
   @Post('upload')
@@ -61,7 +61,8 @@ export class VideosController {
     const video = await this.videosService.upload(file);
     return {
       message: 'Video uploaded successfully, here is its search ID:',
-      gridFsId: video.gridFsId,
+      id: video.id,
+      gridFsId: video.gridFsId
     };
   }
 
@@ -118,4 +119,3 @@ export class VideosController {
     };
   }
 }
-

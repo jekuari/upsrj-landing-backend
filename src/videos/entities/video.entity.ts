@@ -2,30 +2,30 @@ import { Entity, Column, ObjectIdColumn, CreateDateColumn, ObjectId } from 'type
 
 @Entity('videos')
 export class Video {
-    @ObjectIdColumn()
-    _id: ObjectId;
+  @ObjectIdColumn()
+  _id: ObjectId;
 
-    @Column('objectid')
-    gridFsId: ObjectId;
+  @Column('objectid')
+  gridFsId: ObjectId;
 
-    @Column()
-    filename: string;
+  @Column()
+  filename: string;
 
-    @Column()
-    contentType: string;
+  @Column({ nullable: true })
+  contentType: string;
 
-    @Column({ type: 'int', comment: 'Duración en segundos' })
-    duration: number;
+  @Column({ type: 'int', comment: 'Duración en segundos', nullable: true })
+  duration: number;
 
-    @Column({ type: 'int' })
-    width: number;
+  @Column({ type: 'int', nullable: true })
+  width: number;
 
-    @Column({ type: 'int' })
-    height: number;
+  @Column({ type: 'int', nullable: true })
+  height: number;
 
-    @Column({ unique: true })
-    hash: string; // Nuevo campo para almacenar el hash único del video
+  @Column({ nullable: true })
+  hash: string; // Nuevo campo para almacenar el hash único del video
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 }
