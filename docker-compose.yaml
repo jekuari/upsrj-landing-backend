@@ -18,7 +18,7 @@ services:
       - DB_USERNAME=root
       - DB_PASSWORD=example
       - DB_NAME=LandingPage
-      - DATABASE_URL=mongodb://root:root@db:27017/LandingPage?authSource=admin
+      - DATABASE_URL=mongodb://root:example@db:27017/LandingPage?authSource=admin
       - PASSWORD_SEED=SecretoContraseña
       - ADMIN_EMAIL="AndreaStudent@gmail.com"
       - ADMIN_PASSWORD="Abc123"
