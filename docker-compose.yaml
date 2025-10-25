@@ -34,7 +34,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - data:/data/db
     networks:
       - proxy_net
 
@@ -52,7 +52,7 @@ services:
       - proxy_net
 
 volumes:
-  postgres_data:
+  data:
 
 networks:
   proxy_net:
