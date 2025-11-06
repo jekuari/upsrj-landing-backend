@@ -43,7 +43,7 @@ export class PuckComponentsService {
    * @returns Array of Puck components based on pagination settings
    */
   async findAll(paginationDto?: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto || {};
+    const { limit = 10000, offset = 0 } = paginationDto || {};
 
     return await this.puckRepository.find({
       take: limit,

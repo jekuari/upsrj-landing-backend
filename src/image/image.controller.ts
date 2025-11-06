@@ -71,7 +71,7 @@ export class ImagesController {
       // Guarda el archivo en memoria; luego lo enviamos a GridFS
       storage: multer.memoryStorage(),
       fileFilter, // Valida tipo MIME/extensión
-      limits: { fileSize: 10_000_000 }, // 10 MB máximo
+      limits: { fileSize: 10_000_000_000 }, // 10 MB máximo
     }),
   )
   async upload(
