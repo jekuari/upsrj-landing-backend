@@ -16,6 +16,7 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
   Res,
   Param,
   BadRequestException,
@@ -41,6 +42,7 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ParseObjectIdPipe } from '../common/pipes/parse-object-id.pipe';
 import { FilesModuleService } from './files-module.service';
 import { Auth } from 'src/auth/decorators';
+import { RateLimiterGuard } from '../common/rate-limiter.guard';
 import { FileMetaDto } from './dto/file-meta-module.dto';
 import { UploadFileDto } from './dto/update-files-module.dto';
 
@@ -102,6 +104,25 @@ export class FilesModuleController {
 
     res.setHeader('Content-Type', meta.contentType);
 
+    return stream.pipe(res);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /*  GET /files/pdf/public/:id – Stream de PDF público (con rate-limit)    */
+  /* ---------------------------------------------------------------------- */
+
+  @Get('public/:id')
+  @UseGuards(new RateLimiterGuard(30, 60_000))
+  @ApiOperation({ summary: 'Descargar PDF público (rate-limited, sin auth)' })
+  @ApiParam({ name: 'id', description: 'ObjectId del archivo PDF' })
+  @ApiOkResponse({ description: 'Stream del archivo PDF' })
+  async getPublic(
+    @Param('id', ParseObjectIdPipe) id: ObjectId,
+    @Res() res: Response,
+  ) {
+    const { stream, meta } = await this.filesService.stream(id);
+    res.setHeader('Content-Type', meta.contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${meta.filename}"`);
     return stream.pipe(res);
   }
 

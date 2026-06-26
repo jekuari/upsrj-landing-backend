@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   landing-api:
-    build:
-      context: ./
-      dockerfile: Dockerfile
+    image: ghcr.io/jekuari/upsrj-landing-backend:latest
     container_name: landing-api
     restart: always
     depends_on:

@@ -11,6 +11,10 @@ import { FilesModule } from './files-module/files-module.module';
 import { VideosModule } from './videos/videos.module';
 import { BlogModule } from './blog/blog.module';
 import { TemplatesModuleModule } from './templates-module/templates-module.module';
+import { NavbarModule } from './navbar/navbar.module';
+import { MailModule } from './mail/mail.module';
+import { LeadsModule } from './leads/leads.module';
+import { EmailTemplatesModule } from './email-templates/email-templates.module';
 
 @Module({
   providers: [SeedService],
@@ -36,6 +40,10 @@ import { TemplatesModuleModule } from './templates-module/templates-module.modul
     VideosModule,
     BlogModule,
     TemplatesModuleModule,
+    NavbarModule,
+    MailModule,
+    LeadsModule,
+    EmailTemplatesModule,
   ]
 })
 export class AppModule implements OnModuleInit {

@@ -16,6 +16,7 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
   Res,
   Param,
   BadRequestException,
@@ -50,6 +51,7 @@ import {
   PaginatedImagesDto,
 } from 'src/common/dtos/paginated-images.response';
 import { Auth } from 'src/auth/decorators';
+import { RateLimiterGuard } from '../common/rate-limiter.guard';
 
 @ApiTags('Images') // Grupo Swagger
 @Controller('files/images')
@@ -97,6 +99,7 @@ export class ImagesController {
   /* ---------------------------------------------------------------------- */
 
   @Get(':id')
+  @UseGuards(new RateLimiterGuard(60, 60_000))
   @ApiOperation({ summary: 'Descargar/visualizar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })
   @ApiOkResponse({ description: 'Devuelve la imagen solicitada (stream)' })
