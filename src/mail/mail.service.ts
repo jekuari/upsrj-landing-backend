@@ -1,20 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
-import { ConfigService } from '@nestjs/config';
+import { InfisicalService } from '../infisical/infisical.service';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private transporter: nodemailer.Transporter;
 
-  constructor(private readonly config: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: this.config.get<string>('SMTP_HOST'),
-      port: this.config.get<number>('SMTP_PORT'),
+  constructor(private readonly infisicalService: InfisicalService) {}
+
+  private getTransporter() {
+    const creds = this.infisicalService.getSmtpCredentials();
+    return nodemailer.createTransport({
+      host: creds.host,
+      port: creds.port,
       secure: false,
       auth: {
-        user: this.config.get<string>('SMTP_USER'),
-        pass: this.config.get<string>('SMTP_PASS'),
+        user: creds.user,
+        pass: creds.pass,
       },
     });
   }
@@ -26,7 +28,8 @@ export class MailService {
     to: string;
     name: string;
   }): Promise<void> {
-    const from = this.config.get<string>('SMTP_FROM') || 'noreply@example.com';
+    const creds = this.infisicalService.getSmtpCredentials();
+    const from = creds.from || 'noreply@example.com';
     const subject = 'Hemos recibido tu información';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #333;">
@@ -45,7 +48,8 @@ export class MailService {
     `;
 
     try {
-      await this.transporter.sendMail({ from, to: opts.to, subject, html });
+      const transporter = this.getTransporter();
+      await transporter.sendMail({ from, to: opts.to, subject, html });
       this.logger.log(`Confirmation email sent to ${opts.to}`);
     } catch (err) {
       this.logger.error(`Failed to send confirmation email to ${opts.to}`, err?.stack);
@@ -63,9 +67,11 @@ export class MailService {
     html: string;
     replyTo: string;
   }): Promise<void> {
-    const from = this.config.get<string>('SMTP_FROM') || 'noreply@example.com';
+    const creds = this.infisicalService.getSmtpCredentials();
+    const from = creds.from || 'noreply@example.com';
 
-    await this.transporter.sendMail({
+    const transporter = this.getTransporter();
+    await transporter.sendMail({
       from,
       to: opts.to,
       subject: opts.subject,

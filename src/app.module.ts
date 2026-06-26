@@ -1,6 +1,7 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { AccessRightsModule } from './access-rights/access-rights.module';
 import { SeedModule } from './seed/seed.module';
@@ -15,6 +16,9 @@ import { NavbarModule } from './navbar/navbar.module';
 import { MailModule } from './mail/mail.module';
 import { LeadsModule } from './leads/leads.module';
 import { EmailTemplatesModule } from './email-templates/email-templates.module';
+import { InfisicalModule } from './infisical/infisical.module';
+import { ApiKeyModule } from './api-keys/api-keys.module';
+import { SecretsModule } from './secrets/secrets.module';
 
 @Module({
   providers: [SeedService],
@@ -22,6 +26,8 @@ import { EmailTemplatesModule } from './email-templates/email-templates.module';
     ConfigModule.forRoot({
       isGlobal: true,  // Permite acceso a las variables de entorno en toda la app
     }),
+
+    ScheduleModule.forRoot(),
 
     TypeOrmModule.forRoot({
       type: 'mongodb',
@@ -44,6 +50,9 @@ import { EmailTemplatesModule } from './email-templates/email-templates.module';
     MailModule,
     LeadsModule,
     EmailTemplatesModule,
+    InfisicalModule,
+    ApiKeyModule,
+    SecretsModule,
   ]
 })
 export class AppModule implements OnModuleInit {
