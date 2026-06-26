@@ -1,4 +1,4 @@
-FROM node:18.20.4-alpine3.20
+FROM node:22.13.0
 WORKDIR /usr/app
 COPY package.json .
 COPY pnpm-lock.yaml .
