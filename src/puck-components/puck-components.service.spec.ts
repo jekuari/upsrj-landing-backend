@@ -5,7 +5,7 @@ import { PuckComponentsService } from './puck-components.service';
 import { PuckComponent } from './entities/puck-component.entity';
 import { CreatePuckComponentDto } from './dto/create-puck-component.dto';
 import { UpdatePuckComponentDto } from './dto/update-puck-component.dto';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 
 // Mock para PaginationDto en lugar de importarlo
@@ -162,7 +162,7 @@ describe('PuckComponentsService', () => {
 
       // Assert
       expect(repository.find).toHaveBeenCalledWith({
-        take: 10,
+        take: 10000,
         skip: 0
       });
       expect(result).toEqual(mockComponents);
@@ -253,6 +253,16 @@ describe('PuckComponentsService', () => {
       // Assert
       expect(service.findOne).toHaveBeenCalledWith(mockSlug);
       expect(repository.remove).toHaveBeenCalledWith(mockPuckComponent);
+    });
+
+    it('should throw BadRequestException if trying to delete root page with empty slug', async () => {
+      // Act & Assert
+      await expect(service.remove('')).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException if trying to delete root page with _index slug', async () => {
+      // Act & Assert
+      await expect(service.remove('_index')).rejects.toThrow(BadRequestException);
     });
   });
 });

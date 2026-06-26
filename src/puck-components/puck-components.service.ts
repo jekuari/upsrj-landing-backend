@@ -18,6 +18,10 @@ export class PuckComponentsService {
     private readonly puckRepository: MongoRepository<PuckComponent>,
   ) {}
 
+  private getDbSlug(slug: string): string {
+    return slug === '_index' ? '' : (slug || '');
+  }
+
   /**
    * Creates a new Puck component
    * @param dto The data transfer object containing component details
@@ -28,13 +32,14 @@ export class PuckComponentsService {
 
     // Eliminar _id si viene en el DTO para evitar conflictos
     const { _id, ...restDto } = dto as any;
+    const dbSlug = this.getDbSlug(dto.slug || '');
 
-    const exists = await this.puckRepository.findOneBy({ slug: dto.slug });
+    const exists = await this.puckRepository.findOneBy({ slug: dbSlug });
     if (exists) {
-      return this.update(exists.slug, restDto);
+      return this.update(dbSlug, restDto);
     }
 
-    return this.puckRepository.save({ ...restDto, slug: dto.slug });
+    return this.puckRepository.save({ ...restDto, slug: dbSlug });
   }
 
   /**
@@ -57,8 +62,9 @@ export class PuckComponentsService {
    * @returns The found component or throws NotFoundException
    */
   async findOne(slug: string) {
-    const component = await this.puckRepository.findOneBy({ slug: slug });
-    console.log('component found:', component, slug);
+    const dbSlug = this.getDbSlug(slug);
+    const component = await this.puckRepository.findOneBy({ slug: dbSlug });
+    console.log('component found:', component, dbSlug);
     if (!component) {
       throw new NotFoundException(`Component with id "${slug}" not found`);
     }
@@ -72,8 +78,14 @@ export class PuckComponentsService {
    * @returns The updated component
    */
   async update(slug: string, dto: UpdatePuckComponentDto) {
-    const existing = await this.findOne(slug); // lanza error si no existe
-    const updated = Object.assign(existing, dto);
+    const dbSlug = this.getDbSlug(slug);
+    const existing = await this.findOne(dbSlug); // lanza error si no existe
+    
+    const updatedDto = { ...dto };
+    if (updatedDto.slug !== undefined) {
+      updatedDto.slug = this.getDbSlug(updatedDto.slug);
+    }
+    const updated = Object.assign(existing, updatedDto);
     return await this.puckRepository.save(updated);
   }
 
@@ -82,7 +94,11 @@ export class PuckComponentsService {
    * @param slug The unique identifier of the component to delete
    */
   async remove(slug: string) {
-    const component = await this.findOne(slug); // lanza error si no existe
+    const dbSlug = this.getDbSlug(slug);
+    if (dbSlug === '') {
+      throw new BadRequestException('No se puede eliminar la página de inicio');
+    }
+    const component = await this.findOne(dbSlug); // lanza error si no existe
     await this.puckRepository.remove(component);
   }
 
