@@ -56,7 +56,7 @@ export class FilesModuleController {
   /*  POST /files/pdf – Carga de archivo PDF                                */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canCreate' }])
+  @Auth(['files:upload'])
   @Post()
   @ApiOperation({ summary: 'Subir un archivo PDF' })
   @ApiCreatedResponse({ type: UploadFileDto, description: 'Archivo PDF subido correctamente' })
@@ -91,7 +91,7 @@ export class FilesModuleController {
   /*  GET /files/pdf/:id – Stream de PDF                                    */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canRead' }])
+  @Auth(['files:view'])
   @Get(':id')
   @ApiOperation({ summary: 'Descargar/visualizar un archivo PDF por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId del archivo PDF' })
@@ -130,7 +130,7 @@ export class FilesModuleController {
   /*  GET /files/pdf – Listar archivos PDF (paginados o no)                 */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canRead' }])
+  @Auth(['files:view'])
   @Get()
   @ApiOperation({ summary: 'Listar archivos PDF (paginados o sin metadata)' })
   @ApiOkResponse({
@@ -157,7 +157,7 @@ export class FilesModuleController {
   /*  DELETE /files/pdf/:id – Eliminar archivo PDF (binario + metadatos)    */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canDelete' }])
+  @Auth(['files:delete'])
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un archivo PDF por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId del archivo PDF' })

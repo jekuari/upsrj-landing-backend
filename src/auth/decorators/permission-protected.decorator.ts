@@ -2,13 +2,10 @@ import { SetMetadata } from '@nestjs/common';
 
 export const META_PERMISSIONS = 'permissions';
 
-export type ModuleName = 'Authentication' | 'Images' | 'Permission' | 'Puck' | 'Videos' | 'Files' | 'Blog' | 'Templates' | 'Navbar' | 'Leads' | 'EmailTemplates';
-export type PermissionType = 'canRead' | 'canCreate' | 'canUpdate' | 'canDelete';
-
 export interface RequiredPermission {
-  module: ModuleName;
-  permission: PermissionType;
+  module: string;
+  permission: string;
 }
 
-export const PermissionProtected = (permissions: RequiredPermission[]) =>
+export const PermissionProtected = (permissions: string[]) =>
   SetMetadata(META_PERMISSIONS, permissions);

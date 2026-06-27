@@ -28,7 +28,7 @@ export class NavbarController {
     type: NavbarConfig,
   })
   @ApiBearerAuth('JWT-auth')
-  @Auth([{ module: 'Navbar', permission: 'canUpdate' }])
+  @Auth(['navbar:write'])
   @Put()
   async saveNavbar(@Body() saveNavbarDto: SaveNavbarDto): Promise<NavbarConfig> {
     return this.navbarService.saveNavbarConfig(saveNavbarDto);

@@ -4,12 +4,12 @@ import { ApiKey } from './entities/api-key.entity';
 import { ApiKeyService } from './api-keys.service';
 import { ApiKeyController } from './api-keys.controller';
 import { ApiKeyGuard } from './guards/api-key.guard';
-import { AccessRightsModule } from '../access-rights/access-rights.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ApiKey]),
-    AccessRightsModule,
+    AuthModule,
   ],
   controllers: [ApiKeyController],
   providers: [ApiKeyService, ApiKeyGuard],

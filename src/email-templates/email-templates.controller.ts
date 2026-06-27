@@ -20,35 +20,35 @@ export class EmailTemplatesController {
   constructor(private readonly service: EmailTemplatesService) {}
 
   @ApiOperation({ summary: 'Create an email template' })
-  @Auth([{ module: 'EmailTemplates', permission: 'canCreate' }])
+  @Auth(['email-templates:create'])
   @Post()
   create(@Body() dto: CreateEmailTemplateDto) {
     return this.service.create(dto);
   }
 
   @ApiOperation({ summary: 'Get all email templates' })
-  @Auth([{ module: 'EmailTemplates', permission: 'canRead' }])
+  @Auth(['email-templates:view'])
   @Get()
   findAll() {
     return this.service.findAll();
   }
 
   @ApiOperation({ summary: 'Get a single email template' })
-  @Auth([{ module: 'EmailTemplates', permission: 'canRead' }])
+  @Auth(['email-templates:view'])
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
   @ApiOperation({ summary: 'Update an email template' })
-  @Auth([{ module: 'EmailTemplates', permission: 'canUpdate' }])
+  @Auth(['email-templates:write'])
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateEmailTemplateDto) {
     return this.service.update(id, dto);
   }
 
   @ApiOperation({ summary: 'Delete an email template' })
-  @Auth([{ module: 'EmailTemplates', permission: 'canDelete' }])
+  @Auth(['email-templates:delete'])
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(id);

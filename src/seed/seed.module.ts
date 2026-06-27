@@ -4,16 +4,17 @@ import { SeedController } from './seed.controller';
 
 import { AuthModule } from 'src/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { AccessRightsModule } from 'src/access-rights/access-rights.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Permission } from 'src/auth/entities/permission.entity';
 
 @Module({
   controllers: [SeedController],
   providers: [SeedService],
+  exports: [SeedService],
   imports:[
     ConfigModule,
-    AccessRightsModule,
+    TypeOrmModule.forFeature([Permission]),
     forwardRef(() => AuthModule),  
   ]
 })
-// Módulo que gestiona la inicialización de datos en la base de datos
 export class SeedModule {}

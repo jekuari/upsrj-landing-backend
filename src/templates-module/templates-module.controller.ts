@@ -34,7 +34,7 @@ export class TemplatesModuleController {
     type: TemplatesComponent,
   })
   @ApiResponse({ status: 400, description: 'Solicitud inválida' })
-  @Auth([{ module: 'Templates', permission: 'canCreate' }])
+  @Auth(['templates:create'])
   @Post()
   async create(
     @Body() createDto: CreateTemplatesModuleDto,
@@ -77,7 +77,7 @@ export class TemplatesModuleController {
   })
   @ApiResponse({ status: 400, description: 'Datos de actualización inválidos' })
   @ApiResponse({ status: 404, description: 'Template no encontrado' })
-  @Auth([{ module: 'Templates', permission: 'canUpdate' }])
+  @Auth(['templates:write'])
   @Patch(':slug')
   async update(
     @Param('slug') slug: string,
@@ -93,7 +93,7 @@ export class TemplatesModuleController {
     description: 'Template eliminado exitosamente',
   })
   @ApiResponse({ status: 404, description: 'Template no encontrado' })
-  @Auth([{ module: 'Templates', permission: 'canDelete' }])
+  @Auth(['templates:delete'])
   @Delete(':slug')
   async remove(@Param('slug') slug: string): Promise<void> {
     const slugString = decodeURIComponent(slug);

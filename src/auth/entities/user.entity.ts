@@ -59,9 +59,13 @@ export class User {
     isActive: boolean;
 
 
-    @ApiProperty({ description: 'List of access right IDs', type: 'array', items: { type: 'string', format: 'ObjectId' } })
-    @Column()
-    accessRights: ObjectId[];
+    @ApiProperty({ description: 'List of individual permissions', type: 'array', items: { type: 'string' } })
+    @Column({ type: 'array', default: [] })
+    permissions: string[];
+
+    @ApiProperty({ description: 'List of roles assigned to the user', type: 'array', items: { type: 'string' } })
+    @Column({ type: 'array', default: [] })
+    roles: string[];
 
     @BeforeInsert()
     checkFieldsInsert() {

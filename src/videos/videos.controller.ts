@@ -39,7 +39,7 @@ import { UploadFileDto } from 'src/files-module/dto/update-files-module.dto';
 export class VideosController {
   constructor(private readonly videosService: VideosService) { }
 
-  @Auth([{ module: 'Images', permission: 'canCreate' }])
+  @Auth(['videos:upload'])
   @Post('upload')
   @ApiOperation({ summary: 'Subir un video' })
   @ApiConsumes('multipart/form-data')
@@ -90,7 +90,7 @@ export class VideosController {
     stream.pipe(res);
   }
 
-  @Auth([{ module: 'Images', permission: 'canDelete' }])
+  @Auth(['videos:delete'])
   @Delete(':id')
   @HttpCode(200)
   @ApiOperation({ summary: 'Delete a video by ID' })

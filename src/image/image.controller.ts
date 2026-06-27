@@ -63,7 +63,7 @@ export class ImagesController {
   /*  POST /files/product – Carga de imagen                                 */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canCreate' }])
+  @Auth(['images:upload'])
   @Post()
   @ApiOperation({ summary: 'Subir una imagen de producto' })
   @ApiCreatedResponse({ type: UploadImageResponseDto })
@@ -118,7 +118,7 @@ export class ImagesController {
   }
 
   /** Lista paginada de imágenes (metadatos + URL) */
-  @Auth([{ module: 'Images', permission: 'canRead' }]) // Permiso para leer imágenes
+  @Auth(['images:view'])
   @Get()
   @ApiOperation({ summary: 'Listar imágenes (paginadas o sin metadata)' })
   @ApiOkResponse({
@@ -150,7 +150,7 @@ export class ImagesController {
   /*  DELETE /files/product/:id – Elimina imagen (binario + metadatos)      */
   /* ---------------------------------------------------------------------- */
 
-  @Auth([{ module: 'Images', permission: 'canDelete' }])
+  @Auth(['images:delete'])
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar una imagen por ID' })
   @ApiParam({ name: 'id', description: 'ObjectId de la imagen' })

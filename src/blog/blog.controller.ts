@@ -34,7 +34,7 @@ export class BlogController {
     type: BlogComponent,
   })
   @ApiResponse({ status: 400, description: 'Solicitud inválida' })
-  @Auth([{ module: 'Blog', permission: 'canCreate' }])
+  @Auth(['blogs:create'])
   @Post()
   async create(@Body() dto: CreateBlogComponentDto): Promise<BlogComponent> {
     return this.blogService.create(dto);
@@ -75,7 +75,7 @@ export class BlogController {
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 404, description: 'Blog no encontrado' })
-  @Auth([{ module: 'Blog', permission: 'canUpdate' }])
+  @Auth(['blogs:write'])
   @Patch(':slug')
   async update(
     @Param('slug') slug: string,
@@ -91,7 +91,7 @@ export class BlogController {
     description: 'Blog eliminado exitosamente',
   })
   @ApiResponse({ status: 404, description: 'Blog no encontrado' })
-  @Auth([{ module: 'Blog', permission: 'canDelete' }])
+  @Auth(['blogs:delete'])
   @Delete(':slug')
   async remove(@Param('slug') slug: string): Promise<void> {
     const slugString = decodeURIComponent(slug);

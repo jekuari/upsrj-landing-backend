@@ -1,25 +1,30 @@
-import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
-import * as bcrypt from 'bcryptjs';  
+import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { MongoRepository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { InviteToken } from './entities/invite-token.entity';
 import { LoginUserDto, CreateUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt.payload.interface';
-import { AccessRightsService } from '../access-rights/access-rights.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ObjectId } from 'mongodb';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
-  constructor( 
+  constructor(
     @InjectRepository(User)
-    private readonly userRepository: MongoRepository<User>,  // Cambio a MongoRepository para compatibilidad con MongoDB
-    @Inject(forwardRef(() => AccessRightsService))
-    private readonly accessRightsService:AccessRightsService, 
-    private readonly jwtService: JwtService
+    private readonly userRepository: MongoRepository<User>,
+    @InjectRepository(InviteToken)
+    private readonly inviteTokenRepo: MongoRepository<InviteToken>,
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async createSeed(createUserDto: CreateUserDto) {
@@ -29,23 +34,18 @@ export class AuthService {
       throw new Error('Password is missing in createSeed()');
     }
     
-    /* 1. Hash de la contraseña */
     const hashedPassword = await bcrypt.hash(password, 10);
   
-    /* 2. Instanciar la entidad (todavía sin _id) */
     const user = this.userRepository.create({
       ...userData,
       password: hashedPassword,
       isActive: true,
+      roles: ['role:admin'],
+      permissions: [],
     });
   
-    /* 3. Guardar y obtener la copia con _id */
     const newUser = await this.userRepository.save(user);
   
-    /* 4. Crear permisos con la entidad que SÍ tiene el ID */
-    await this.accessRightsService.createPermissionSeed(newUser);
-  
-    /* 5. Limpiar datos sensibles y devolver resultado */
     delete newUser.password;
   
     return {
@@ -54,33 +54,27 @@ export class AuthService {
     };
   }
   
-  // Crear un nuevo usuario
   async create(createUserDto: CreateUserDto) {
     try {
       const { password, ...userData } = createUserDto;
   
-      // Hash de la contraseña usando bcrypt
       const hashedPassword = await bcrypt.hash(password, 10);
   
-      // Crear la instancia del usuario con valores predeterminados para propiedades ausentes en el DTO
       const user = this.userRepository.create({
         ...userData,
         password: hashedPassword,
-        isActive: true,  // Se establece el valor predeterminado manualmente
+        isActive: true,
+        roles: ['role:viewer'],
+        permissions: [],
       });
   
-      // Guardar el usuario en la base de datos
       const newUser =  await this.userRepository.save(user);
       
-      // Crear permisos de acceso para el nuevo usuario
-      await this.accessRightsService.createPermission(user);
-      // Eliminar datos sensibles antes de retornar
       delete newUser.password;
   
-      // Retornar un objeto simple, no como instancia de User
       return {
         ...newUser,
-        token: this.getJwtToken({ id: newUser.id.toString() }),  // Convertir ObjectId a string
+        token: this.getJwtToken({ id: newUser.id.toString() }),
       };
     } catch (error) {
       this.handleDBErrors(error);
@@ -181,10 +175,6 @@ export class AuthService {
   
       const newStatus = !user.isActive;
   
-      if (!newStatus) {
-        await this.accessRightsService.remove(id);
-      }
-  
       const updateResult = await this.userRepository.findOneAndUpdate(
         { _id: user.id },
         { $set: { isActive: newStatus } },
@@ -229,6 +219,162 @@ export class AuthService {
     if (!user || !user.isActive) {
       throw new NotFoundException('User not found or inactive');
     }
+    return user;
+  }
+
+  async createAndInvite(dto: Partial<CreateUserDto> & { permissions?: string[]; roles?: string[] }) {
+    const { permissions = [], roles = ['role:viewer'], ...userData } = dto;
+
+    const user = this.userRepository.create({
+      ...userData,
+      password: 'PENDING',
+      isActive: false,
+      permissions,
+      roles,
+    });
+
+    const newUser = await this.userRepository.save(user);
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const inviteToken = this.inviteTokenRepo.create({
+      token,
+      userId: newUser.id,
+      type: 'invite',
+      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+      createdAt: new Date(),
+    });
+    await this.inviteTokenRepo.save(inviteToken);
+
+    await this.mailService.sendInviteEmail(newUser.email, token);
+
+    delete newUser.password;
+    return newUser;
+  }
+
+  async verifyInviteToken(token: string) {
+    const inviteToken = await this.inviteTokenRepo.findOne({
+      where: { token, type: 'invite', expiresAt: { $gt: new Date() } } as any,
+    });
+    if (!inviteToken) {
+      throw new BadRequestException('Invalid or expired invite token');
+    }
+    return inviteToken;
+  }
+
+  async completeRegistration(token: string, password: string) {
+    const inviteToken = await this.verifyInviteToken(token);
+    const user = await this.userRepository.findOne({ where: { _id: inviteToken.userId } as any });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.isActive = true;
+    await this.userRepository.save(user);
+    await this.inviteTokenRepo.delete(inviteToken.id);
+
+    delete user.password;
+    return {
+      ...user,
+      token: this.getJwtToken({ id: user.id.toString() }),
+    };
+  }
+
+  async requestPasswordReset(email: string) {
+    const mailLowerCase = email.toLowerCase().trim();
+    const user = await this.userRepository.findOne({ where: { email: mailLowerCase } });
+
+    if (!user) {
+      return { message: 'If the email exists, a reset code has been sent' };
+    }
+
+    await this.inviteTokenRepo.deleteMany({ userId: user.id, type: 'password_reset' } as any);
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const inviteToken = this.inviteTokenRepo.create({
+      token: otp,
+      userId: user.id,
+      type: 'password_reset',
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      createdAt: new Date(),
+    });
+    await this.inviteTokenRepo.save(inviteToken);
+
+    await this.mailService.sendPasswordResetEmail(mailLowerCase, otp);
+
+    return { message: 'If the email exists, a reset code has been sent' };
+  }
+
+  async verifyPasswordResetOtp(email: string, otp: string) {
+    const mailLowerCase = email.toLowerCase().trim();
+    const user = await this.userRepository.findOne({ where: { email: mailLowerCase } });
+    if (!user) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
+
+    const token = await this.inviteTokenRepo.findOne({
+      where: { userId: user.id, type: 'password_reset', token: otp, expiresAt: { $gt: new Date() } } as any,
+    });
+    if (!token) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
+
+    return { valid: true, tokenId: token.id.toString() };
+  }
+
+  async resetPassword(tokenId: string, newPassword: string) {
+    const objectId = new ObjectId(tokenId);
+    const token = await this.inviteTokenRepo.findOne({ where: { _id: objectId } as any });
+    if (!token || token.expiresAt < new Date()) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+
+    const user = await this.userRepository.findOne({ where: { _id: token.userId } as any });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await this.userRepository.save(user);
+    await this.inviteTokenRepo.delete(objectId);
+
+    return { message: 'Password reset successfully' };
+  }
+
+  async deleteUser(id: string) {
+    const query = ObjectId.isValid(id)
+      ? { _id: new ObjectId(id) }
+      : { matricula: id };
+
+    const user = await this.userRepository.findOne({ where: query });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.userRepository.delete(user.id);
+    return { message: 'User deleted successfully' };
+  }
+
+  async updateUserDetails(id: string, dto: { email?: string; fullName?: string; permissions?: string[]; roles?: string[] }) {
+    const query = ObjectId.isValid(id)
+      ? { _id: new ObjectId(id) }
+      : { matricula: id };
+
+    const user = await this.userRepository.findOne({ where: query });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (dto.email !== undefined) user.email = dto.email;
+    if (dto.fullName !== undefined) user.fullName = dto.fullName;
+    if (dto.permissions !== undefined) user.permissions = dto.permissions;
+    if (dto.roles !== undefined) user.roles = dto.roles;
+
+    await this.userRepository.save(user);
+
+    delete user.password;
     return user;
   }
 }

@@ -4,6 +4,8 @@ import { InfisicalService } from '../infisical/infisical.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ApiKey } from '../api-keys/entities/api-key.entity';
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { Role } from '../auth/entities/role.entity';
 
 const mockInfisicalService = {
   forceReload: jest.fn().mockResolvedValue(undefined),
@@ -30,8 +32,16 @@ describe('SecretsController', () => {
           useValue: { get: jest.fn() },
         },
         {
+          provide: ConfigService,
+          useValue: { get: jest.fn() },
+        },
+        {
           provide: getRepositoryToken(ApiKey),
           useValue: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(Role),
+          useValue: {},
         },
       ],
     }).compile();

@@ -40,7 +40,7 @@ export class LeadsController {
    */
   @ApiOperation({ summary: 'Get all leads with pagination, search, sort and filter' })
   @ApiBearerAuth('JWT-auth')
-  @Auth([{ module: 'Leads', permission: 'canRead' }])
+  @Auth(['leads:view'])
   @Get()
   findAll(@Query() query: QueryLeadsDto) {
     return this.leadsService.findAll(query);
@@ -51,7 +51,7 @@ export class LeadsController {
    */
   @ApiOperation({ summary: 'Get a single lead' })
   @ApiBearerAuth('JWT-auth')
-  @Auth([{ module: 'Leads', permission: 'canRead' }])
+  @Auth(['leads:view'])
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.leadsService.findOne(id);
@@ -62,7 +62,7 @@ export class LeadsController {
    */
   @ApiOperation({ summary: 'Update lead status and record history' })
   @ApiBearerAuth('JWT-auth')
-  @Auth([{ module: 'Leads', permission: 'canUpdate' }])
+  @Auth(['leads:edit'])
   @Patch(':id/status')
   updateStatus(
     @Param('id') id: string,
@@ -77,7 +77,7 @@ export class LeadsController {
    */
   @ApiOperation({ summary: 'Contact a lead via email' })
   @ApiBearerAuth('JWT-auth')
-  @Auth([{ module: 'Leads', permission: 'canUpdate' }])
+  @Auth(['leads:edit'])
   @Post(':id/contact')
   contactLead(
     @Param('id') id: string,

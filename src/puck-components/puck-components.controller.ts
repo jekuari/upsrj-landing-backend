@@ -34,7 +34,7 @@ export class PuckComponentsController {
     type: PuckComponent,
   })
   @ApiResponse({ status: 400, description: 'Solicitud inválida' })
-  @Auth([{ module: 'Puck', permission: 'canCreate' }])
+  @Auth(['pages:create'])
   @Post()
   async create(
     @Body() createPuckComponentDto: CreatePuckComponentDto,
@@ -79,7 +79,7 @@ export class PuckComponentsController {
   })
   @ApiResponse({ status: 400, description: 'Datos de actualización inválidos' })
   @ApiResponse({ status: 404, description: 'Componente no encontrado' })
-  @Auth([{ module: 'Puck', permission: 'canUpdate' }])
+  @Auth(['pages:write'])
   @Patch(':slug')
   async update(
     @Param('slug') slug: string,
@@ -95,7 +95,7 @@ export class PuckComponentsController {
     description: 'Componente eliminado exitosamente',
   })
   @ApiResponse({ status: 404, description: 'Componente no encontrado' })
-  @Auth([{ module: 'Puck', permission: 'canDelete' }])
+  @Auth(['pages:delete'])
   @Delete(':slug')
   async remove(@Param('slug') slug: string): Promise<void> {
     const slugString = decodeURIComponent(slug);

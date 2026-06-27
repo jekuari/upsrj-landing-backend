@@ -14,7 +14,7 @@ import { AuthModule } from 'src/auth/auth.module';
     TypeOrmModule.forFeature([AccessRight,SystemModule]) // Registra las entidades AccessRight y SystemModule en TypeORM
   ],
   controllers: [AccessRightsController], // Controlador que maneja las solicitudes HTTP relacionadas con los derechos de acceso
-  providers: [AccessRightsService, AuthService], // Proveedores de servicios para gestionar la lógica de negocio
+  providers: [AccessRightsService], // Proveedores de servicios para gestionar la lógica de negocio
   exports:[TypeOrmModule, AccessRightsService] // Exporta TypeOrmModule y AccessRightsService para ser utilizados en otros módulos
 })
 export class AccessRightsModule {}

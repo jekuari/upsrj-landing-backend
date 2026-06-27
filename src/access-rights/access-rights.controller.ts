@@ -18,7 +18,7 @@ export class AccessRightsController {
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (moduleName)'})
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (userId)'})
   @ApiResponse({ status: 404, description: 'Permission not found'})
-  @Auth([{ module: 'Permission', permission: 'canRead'}])
+  @Auth(['roles:view'])
   @Get('getPermission/:userId')
   findOne(@Param('userId') UserId: string, @Query('module') moduleName: string) {
     return this.accessRightsService.findOne(UserId, moduleName);
@@ -29,7 +29,7 @@ export class AccessRightsController {
   @ApiResponse({ status: 200, description: 'Request successful'})
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (userId)'})
   @ApiResponse({ status: 404, description: 'Permissions not found'})
-  @Auth([{ module: 'Permission', permission: 'canRead'}])
+  @Auth(['roles:view'])
   @Get('getPermissions/:userId')
   findAll(@Param('userId') UserId: string) {
     return this.accessRightsService.findAll(UserId);
@@ -42,7 +42,7 @@ export class AccessRightsController {
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (moduleName)'})
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (userId)'})
   @ApiResponse({ status: 404, description: 'User not found or inactive'})
-  @Auth([{ module: 'Permission', permission: 'canUpdate'}])
+  @Auth(['roles:edit'])
   @Patch('updatePermissions/:userId')
   update(@Param('userId') UserId: string, @Query('module') moduleName: string, @Body() updateAccessRightDto: UpdateAccessRightDto) {
     return this.accessRightsService.update(UserId, moduleName, updateAccessRightDto);
@@ -53,7 +53,7 @@ export class AccessRightsController {
   @ApiResponse({ status: 200, description: 'Permissions removed successfully'})
   @ApiResponse({ status: 400, description: 'Bad request. Invalid input data (userId)'})
   @ApiResponse({ status: 404, description: 'User not found or inactive'})
-  @Auth([{ module: 'Permission', permission: 'canDelete'}])
+  @Auth(['roles:delete'])
   @Patch('removePermissions/:userId')
   remove(@Param('userId') UserId: string) {
     return this.accessRightsService.remove(UserId);

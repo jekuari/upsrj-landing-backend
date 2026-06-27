@@ -4,7 +4,9 @@ import { PuckComponentsService } from './puck-components.service';
 import { CreatePuckComponentDto } from './dto/create-puck-component.dto';
 import { UpdatePuckComponentDto } from './dto/update-puck-component.dto';
 import { ObjectId } from 'mongodb';
-import { AccessRightsService } from '../access-rights/access-rights.service';
+import { UserPermissionGuard } from '../auth/guards/user-permission.guard';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Role } from '../auth/entities/role.entity';
 
 // Mock para PaginationDto en lugar de importarlo
 class PaginationDto {
@@ -101,7 +103,7 @@ describe('PuckComponentsController', () => {
           useValue: mockPuckComponentsService,
         },
         {
-          provide: AccessRightsService,
+          provide: getRepositoryToken(Role),
           useValue: {},
         },
       ],

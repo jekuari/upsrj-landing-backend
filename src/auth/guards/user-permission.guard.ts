@@ -6,19 +6,22 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { META_PERMISSIONS, RequiredPermission } from '../decorators/permission-protected.decorator';
-import { AccessRightsService } from 'src/access-rights/access-rights.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { META_PERMISSIONS } from '../decorators/permission-protected.decorator';
 import { User } from '../entities/user.entity';
+import { Role } from '../entities/role.entity';
 
 @Injectable()
 export class UserPermissionGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly accessRightsService: AccessRightsService,
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermissions: RequiredPermission[] =
+    const requiredPermissions: string[] =
       this.reflector.get(META_PERMISSIONS, context.getHandler()) || [];
 
     if (!requiredPermissions.length) return true;
@@ -30,28 +33,34 @@ export class UserPermissionGuard implements CanActivate {
       throw new BadRequestException('User not found');
     }
 
-    const userPermissions = await this.accessRightsService.getPermissionsByUserId(user.id.toString());
+    const effectivePermissions = new Set<string>();
 
-    const missingPermissions: RequiredPermission[] = [];
+    if (user.permissions) {
+      user.permissions.forEach(p => effectivePermissions.add(p));
+    }
 
-    const hasAllPermissions = requiredPermissions.every(({ module, permission }) => {
-      const modulePermissions = userPermissions.find(p => p.moduleName === module);
-      const hasPermission = modulePermissions?.[permission] === true;
+    if (user.roles && user.roles.length > 0) {
+      const roles = await this.roleRepository.find({
+        where: { name: { $in: user.roles } } as any,
+      });
+      roles.forEach(role => {
+        if (role.permissions) {
+          role.permissions.forEach(p => effectivePermissions.add(p));
+        }
+      });
+    }
 
-      if (!hasPermission) {
-        missingPermissions.push({ module, permission });
-      }
+    const missingPermissions: string[] = [];
 
-      return hasPermission;
+    const hasAll = requiredPermissions.every(p => {
+      if (effectivePermissions.has(p)) return true;
+      missingPermissions.push(p);
+      return false;
     });
 
-    if (!hasAllPermissions) {
-      const missingList = missingPermissions
-        .map(p => `${p.module}.${p.permission}`)
-        .join(', ');
-
+    if (!hasAll) {
       throw new ForbiddenException(
-        `User ${user.fullName} does not have the required permissions: ${missingList}`,
+        `User ${user.fullName} lacks required permissions: ${missingPermissions.join(', ')}`,
       );
     }
 

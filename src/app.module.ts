@@ -21,7 +21,6 @@ import { ApiKeyModule } from './api-keys/api-keys.module';
 import { SecretsModule } from './secrets/secrets.module';
 
 @Module({
-  providers: [SeedService],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,  // Permite acceso a las variables de entorno en toda la app

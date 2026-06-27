@@ -1,22 +1,25 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
+import { InviteToken } from './entities/invite-token.entity';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { AccessRightsService } from 'src/access-rights/access-rights.service';
-import { AccessRightsModule } from 'src/access-rights/access-rights.module';
 import { UserPermissionGuard } from './guards/user-permission.guard';
+import { Role } from './entities/role.entity';
+import { MailModule } from '../mail/mail.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   controllers: [AuthController],
   imports: [
-    forwardRef(() => AccessRightsModule),
     ConfigModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Role, InviteToken]),
+    MailModule,
+    RolesModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
 
     JwtModule.registerAsync({
@@ -37,7 +40,6 @@ import { UserPermissionGuard } from './guards/user-permission.guard';
   providers: [
     AuthService,
     JwtStrategy,
-    AccessRightsService,
     UserPermissionGuard,
   ],
   exports: [
